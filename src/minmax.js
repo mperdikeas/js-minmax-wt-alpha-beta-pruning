@@ -19,6 +19,8 @@ import {assert} from 'chai';
 
 import type {Stringifier, Predicate} from 'flow-common-types';
 
+import {Node} from 'simple-trees';
+
 /*
 Guide to naming conventions used
 -------------------------------
@@ -70,13 +72,14 @@ class GameStateWtEvaluation<SideGTP, MoveGTP, T: IGameState<SideGTP, MoveGTP>> {
 }
 
 
-class Node<T> {}
+
 
 function generateEvaluationTree<SideGTP, MoveGTP, GameStateGTP: IGameState<SideGTP, MoveGTP>>
     (gameState: GameStateGTP
-     , plies: number) : Node<GameStateWtEvaluation<SideGTP, MoveGTP, GameStateGTP>> {
+     , plies: number) : Node<GameStateWtEvaluation<SideGTP, MoveGTP, GameStateGTP>, MoveGTP> {
 
-         return new Node();
+         const rv: Node<GameStateWtEvaluation<SideGTP, MoveGTP, GameStateGTP>, MoveGTP> = new Node();
+         return rv;
     }
 
 function minmax <SideGTP
