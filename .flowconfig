@@ -1,0 +1,13 @@
+[ignore]
+    <PROJECT_ROOT>/node_modules/react/node_modules/fbjs/
+    <PROJECT_ROOT>/node_modules/fbjs/
+    # if you don't ignore *.js.flow files you get duplicate validation messages (e.g. for both a.js and a.js.flow)
+    <PROJECT_ROOT>/lib/.*\.js\.flow
+[include]
+    test
+[libs]
+    decls
+[options]
+    module.name_mapper.extension='css' -> '<PROJECT_ROOT>/flow/stub/css-modules.js'
+    suppress_comment= \\(.\\|\n\\)*\\$SuppressFlowFinding:
+    esproposal.class_static_fields=enable

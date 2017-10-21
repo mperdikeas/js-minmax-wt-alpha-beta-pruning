@@ -1,0 +1,62 @@
+
+type GameStateT;
+type PlayerT;
+type MoveT;
+
+
+// I am left to consider the following: how should I express the GameState as a function of the Player's pieces?
+// is the PlayerT anything else other than the key to a Map<PlayerT, PieceOnBoard<PieceT, BoardT>> ??
+
+// or maybe GameStateT has to be completely opaque (and so should MoveT, PlayerT)
+
+class EvaluatedGameState<GameStateT> {
+
+    gameState: GameStateT;
+    evaluation: number;
+
+    constructor EvaluatedGameState(_gameState: GameStateT) {
+        this.gameState  = _gameState;
+    }
+}
+
+
+export EVALUATOR<GameStateT, PlayerT> = (gameState: GameStateT, player: PlayerT, isMaximizingPlayer: boolean) => number;
+
+
+function bestMove(gameState: GameStateT, player: PlayerT, otherPlayer: PlayerT, numOfPlies: number) {
+    playerHelper = new PlayerHelper<PlayerT>(player, otherPlayer);
+
+    function otherPlayer(x: playerT) {
+        assert.assertTrue( (x===player) || (x===otherPlayer) );
+        if (x===player)
+            return otherPlayer;
+        else
+            return player;
+    }
+
+    function constructTree(gameState: GameStateT, player: PlayerT, numOfPlies: number): Node<EvaluatedGameState<GameStateT>, MoveT>) {
+        assert.assertTrue(numOfPlies>=0);
+        function _constructTree(gameState: GameStateT, player: PlayerT, remaininingPlies: number) {
+            const rv : Node<GameStateT, MoveT> = new Node(new EvaluatedGameState<GameStateT>(gameState));
+            if (remaininingPlies===0)
+                return rv;
+            else {
+                movesAndStates: Map<MoveT, GameStateT> = gameState.moves(player);
+                for (moveAndState: movesAndStates.keys()) {
+                    const node = new Node(moveAndState.state);
+                    gameState.setn(moveAndState.move, _constructTree(moveAndState.state, otherPlayer(player), remainingPlies-1));
+                }
+            }
+        }
+        
+    const evaluatedGameStateTree :Node<EvaluatedGameState<GameStateT>, MoveT> = constructTree(gameState, player, numOfPlies);
+
+    // traverse the leaves of the tree left to right and as you evaluate each leaf proceed to assign alpha / beta and evaluation
+    // values in the nodes higher up ..
+    }
+}
+
+
+
+
+

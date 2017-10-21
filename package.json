@@ -1,0 +1,93 @@
+{
+  "name": "minmax-wt-alpha-beta-pruning",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "clean-logs": "rm -fr npm-debug.log.*",
+    "clean": "rm -fr lib/ && npm run clean-logs",
+    "raze": "npm run clean && rm -fr node_modules",
+    "prebuild": "mkdir -p lib && for f in $(find src/ -iname *.js | cut -c5-) ; do cp src/$f lib/$f.flow; done",
+    "build": "babel src --out-dir lib --source-maps",
+    "build-watch": "babel src --out-dir lib --source-maps --watch",
+    "build-watch.README.NOT-PLAYING-NICELY-with-FLOW.README": [
+      "The above script is not playing nicely under a scenario of continuous Flow validation when one is also using   ",
+      "the suggested method of running Flow continuously as given in property 'flow.README'.                          ",
+      "The reason it is not playing nicely is that this script fails to trigger the prebuild script that prepares     ",
+      "the .flow files in the [lib] location. As a result, while Flow will work (lively / dynamically) on the sources ",
+      "themselves ([src/]) whenever they are updated, and it will also work in the similar manner on the test cases   ",
+      "too ([test/]), it will *not* work when some update in the sources needs to be taken account by annotations in  ",
+      "the test files. In such a case you would have to trigger the copy of the .flow files into the [lib] directory  ",
+      "yourself by doing a:                                                                                           ",
+      "                                                                                                               ",
+      "    $npm run prebuild                                                                                          ",
+      "                                                                                                               ",
+      "The static method [foo] in class [Point] was added precisely to highlight and repro the above case.            ",
+      "So in order to avoid surprises even in this edge case just build continuously with:                            ",
+      "                                                                                                               ",
+      "    $ watch -n 1 -t -d npm run build                                                                           ",
+      "    ... or (alternatively):                                                                                    ",
+      "    $ when-changed $(find src/) -c npm run build                                                               ",
+      "                                                                                                               ",
+      "The above automatically triggers the [prebuild] so updated .flow files are copied into [lib/] and are taken    ",
+      "into account when Flow validates the Mocha files in [test/]. Last comment is that all this happens because     ",
+      "our Mocha tests validate the compiled implementations in [lib/], not those in [src/]. In the latter case       ",
+      "things would have presumably been simpler.                                                                     "
+    ],
+    "build-watch.README.ENOSPC": ["If the above command gives you 'Error: watch src/lib.js ENOSPC', you have to do the following:",
+                                  "$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p",
+                                  "... as suggested in the below links:",
+                                  "http://stackoverflow.com/a/32600959/274677",
+                                  "https://github.com/remy/nodemon/issues/214"
+                                 ],
+    "start": "npm run build && node lib/index.js",
+    "flow-check": "flow check",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "flow.README": [
+      "If you wish to run flow continuously use the following incantation (from the command line): ",
+      "$ watch -n 1 -t -d npm run flow                                                             ",
+      "                                                                                            ",
+      "In this connection also see: build-watch.README.NOT-PLAYING-NICELY-with-FLOW.README         "
+    ],
+    "flow-stop": "flow stop",
+    "test": "npm run build && mocha --require source-map-support/register --compilers js:babel-register",
+    "test-watch": "npm run build && mocha --require source-map-support/register --compilers js:babel-register --watch",
+    "preglobalInstallOnThisMachine": "npm run clean && npm run flow-check && npm run test",
+    "globalInstallOnThisMachine": "npm install -g .",
+    "prepublish": "(in-publish && npm run clean && npm run build && npm run flow-check && npm run test && /bin/false) || not-in-publish",
+    "prepublish.README": "to enable publishing, remove the /bin/false at the end (this serves as a publish guard)"      
+  },
+    "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mperdikeas/js-minmax-wt-alpha-beta-pruning.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mperdikeas/js-minmax-wt-alpha-beta-pruning/issues"
+  },
+  "homepage": "https://github.com/mperdikeas/js-minmax-wt-alpha-beta-pruning#readme",
+  "keywords": [
+      "minmax", "min-max", "alpha beta pruning"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.7.4",
+    "babel-plugin-transform-class-properties": "^6.10.2",
+    "babel-plugin-transform-flow-strip-types": "^6.8.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-runtime": "^6.6.1",
+    "flow-bin": "^0.57.3",
+    "in-publish": "^2.0.0",
+    "mocha": "^2.5.3"
+  },
+  "dependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
+    "babel-polyfill": "^6.7.4",
+    "babel-register": "^6.14.0",
+    "chai": "^4.1.2",
+    "lodash": "^4.10.0",
+    "flow-common-types": "latest",
+    "source-map-support": "^0.4.0"
+  }
+}
