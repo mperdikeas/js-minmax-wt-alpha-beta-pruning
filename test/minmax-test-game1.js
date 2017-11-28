@@ -10,12 +10,72 @@ assert.isOk(_);
 import {minmax} from '../src/index.js';
 assert.isOk(minmax);
 
+/*
+We're going to test a very silly game:
+Each player can choose one of three letters 'A', 'B' and 'C'
+If the player choose the letter his opponent chose in the previous round, he loses the game.
+With perfect play, the game should never end.
 
-describe('minmax', function() {
+MoveGTP         will be 'A' | 'B' | 'C'
+GameEndStateGTP will be ?Empty
 
-    describe('dummy test', function() {
-        it('should work', function() {
+ */
+
+type Letter = 'a' | 'b' | 'c';
+
+
+// todo: import then from index.js
+import type {IGameState}          from '../src/minmax.js';
+import type {PlayerOneOrTwo}      from '../src/minmax.js';
+import type {GameStateBrancherFT} from '../src/minmax.js';
+import      {theOtherPlayer}      from '../src/minmax.js';
+import      {generateMoveTree}    from '../src/minmax.js';
+
+class GameState implements IGameState<Letter> {
+    _playerToMove : PlayerOneOrTwo;
+    letter: ?Letter;
+    prevLetter: ?Letter;
+    
+    playerToMove(): PlayerOneOrTwo {
+        return this._playerToMove;
+    }
+    newState(newLetter: Letter) {
+        return new GameState(theOtherPlayer(this._playerToMove), this.prevLetter, newLetter);
+
+    }
+
+    isEndState(): boolean {
+        return (this.letter!==null) && (this.prevLetter!==null) && (this.letter===this.prevLetter);
+    }
+
+    constructor (playerToMove: PlayerOneOrTwo, letter: ?Letter, prevLetter: ?Letter) {
+        assert.isTrue(letter!==undefined);
+        assert.isTrue(prevLetter!==undefined);
+        this._playerToMove = playerToMove;
+        this.letter = letter;
+        this.prevLetter = prevLetter;
+    }
+}
+
+function brancher(gs: GameState): Map<Letter, GameState> {
+    const rv: Map<Letter, GameState> = new Map();
+    rv.set('a', gs.newState('a'));
+    rv.set('b', gs.newState('b'));
+    rv.set('c', gs.newState('c'));
+    return rv;
+}
+
+
+
+// (brancher:GameStateBrancherFT<Letter>); // TODO-2 I am left to understand this flowtype problem
+
+
+describe('minmax on letter game', function() {
+
+    describe('test 0', function() {
+        it('does not break', function() {
             assert.isTrue(true);
+//            generateMoveTree(new GameState(1, null, null), brancher, 0);
             //            assert.fail(undefined, undefined, "excrement happened" );
             // TODO: comment on: https://stackoverflow.com/a/33756131/274677
             // TODO: I updated the chai declarations to support the signature assert.fail(undefined, undefined, string)
