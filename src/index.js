@@ -12,6 +12,28 @@ if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-
 //
 // ... will print 'undefined' without the the babel-polyfill being required.
 
-import {minmax} from './minmax.js';
+import type {
+    IGameState, PlayerOneOrTwo, BrancherFT, EvaluatorFT, MinMaxFT
+} from './minmax-interface.js'
 
-exports.minmax = minmax;
+import      {PLAYER1}                from './minmax-interface.js';
+import      {PLAYER2}                from './minmax-interface.js';
+import      {theOtherPlayer}         from './minmax-interface.js';
+import      {generateMoveTree}       from './minmax-impl.js';
+import      {minmax}                 from './minmax-impl.js';
+
+
+
+export type {
+    IGameState, PlayerOneOrTwo, BrancherFT, EvaluatorFT, MinMaxFT
+};
+exports.PLAYER1                 = PLAYER1;
+exports.PLAYER2                 = PLAYER2;
+exports.theOtherPlayer          = theOtherPlayer;
+exports.generateMoveTree        = generateMoveTree;
+exports.minmax                  = minmax;
+
+
+
+
+
