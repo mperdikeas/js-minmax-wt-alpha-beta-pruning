@@ -26,61 +26,71 @@ import {Node} from 'simple-trees';
 Guide to naming conventions used
 -------------------------------
 GTP            : Generic Type Parameter
-ISomeType      : Interface type for class structural (not nominal) typing
+{T/I}SomeType  : Interface or Type (respectively) for class or object structural (not nominal) typing
 SomeFunctionFT : Function Type
 */
 
-const PLAYER1 = 1;
-const PLAYER2 = 2;
-export type PlayerOneOrTwo = 1 | 2;
-function theOtherPlayer(player: PlayerOneOrTwo): PlayerOneOrTwo {
-    return player===PLAYER1?PLAYER2:PLAYER1;
-}
 
-export interface IGameState<MoveGTP> {
-    playerToMove(): PlayerOneOrTwo;
-    newState(move: MoveGTP): IGameState<MoveGTP>;
-    isTerminalState(): boolean;
-}
+export type BrancherFT<GameStateGTP, MoveGTP> = (GameStateGTP)=>Array<MoveGTP>
 
-/*  The brancher function should know how to return all possible immediate states from a given
-    state. The framework will only call the brancher on non-terminal states so you don't have
-    to check for that inside your brancher's implementation.
- */
-export type BrancherFT <
-    MoveGTP
-   ,GameStateGTP: IGameState<MoveGTP>
-                       >
-    =
-    (gs: GameStateGTP) => Map<MoveGTP, GameStateGTP>;
+export type IGameRules<GameStateGTP, MoveGTP> = {|
+    /* The framework will *never* call the brancher on a terminal state so you don't have to handle that state.
+       If you don't trust, me simply return [] on a terminal state even though you can just as well throw an
+       exception in that case as execution will never reach that path.
+     */
+//    brancher             (gs: GameStateGTP)               : Array<MoveGTP>;
+    brancher            : BrancherFT<GameStateGTP, MoveGTP>,
+    nextState            (gs: GameStateGTP, move: MoveGTP): GameStateGTP,
+    isTerminalState      (gs: GameStateGTP)               : boolean
+|}
 
 
-/* The evaluator function will ***always*** evaluate from the perspective of PLAYER1
-   positive infinity means WIN or hugely favourable situation for PLAYER1
-   negative ------------------------------------------------------PLAYER2
+
+
+/* The evaluator function will ***always*** evaluate from the perspective of the moving player
+   (we assume that information on which player is moving is embedded in the GameStateGTP)
+   positive infinity means  WIN  or hugely    favourable situation for the moving player
+   negative --------------- LOSS ---------- unfavourable ------------------------------
 
    Note that in the general case it is possible for a game's terminal state to have
    an evaluation that's neither positive nor negative infinity (e.g. if the game allows
    draws or some other graded outcome).
 
+   The evaluator function has no concept of "maximizing" or "minimizing" player. This is an artifact
+   of the minmax algorithm. The evaluator function simply reports from the perspective of the moving
+   player and the minmax implementation (that constructs the game tree) takes account of who the
+   maximizing or minimizing player is and proceeds accordingly. I.e., it effectively multiplies the
+   return value of the evaluator function by +1 or -1 respectively.
  */
-export type EvaluatorFT <MoveGTP, GameStateGTP: IGameState<MoveGTP>> =
-    (gs: GameStateGTP) => number;
+
+export type EvaluatorFT <GameStateGTP> = (gs: GameStateGTP) => number;
+
+export type TMinMaxResult<MoveGTP> = // TODO: change that to nominal, not structural, typing
+    {|
+        bestMove  : MoveGTP,
+        evaluation: number
+    |}
 
 
+export type TMinMaxStatistics<GameStateGTP> =
+    {
+     visitedNode       (n: GameStateGTP): void,
+     evaluatedLeafNode (n: GameStateGTP): void,
+     prunedNodes       (n: GameStateGTP, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number): void
+    };
 
-export type MinMaxFT<SideGTP
-            , MoveGTP
-            , GameStateGTP: IGameState<MoveGTP>
-             > =
-    (gameState: IGameState<MoveGTP>
-     , gameStateBrancher : BrancherFT<MoveGTP, GameStateGTP>
-     , evaluator: EvaluatorFT<MoveGTP, GameStateGTP>
-     , plies: number) => MoveGTP;
+/* The minmax function type (MinMaxFT) returns both the best move and the evaluation of the root
+   node. It assumes that the moving player at the root is also the maximizing player.
+ */
+export type MinMaxFT<GameStateGTP, MoveGTP> =
+    (gameState   : GameStateGTP
+     , gameRules : IGameRules<GameStateGTP, MoveGTP>
+     , evaluator: EvaluatorFT<GameStateGTP>
+     , plies: number
+     , alpha: number
+     , beta: number
+     , statisticsHook: ?TMinMaxStatistics<GameStateGTP>
+    ) => TMinMaxResult<MoveGTP>;
 
-
-exports.PLAYER1 = PLAYER1;
-exports.PLAYER2 = PLAYER2;
-exports.theOtherPlayer = theOtherPlayer;
 
 

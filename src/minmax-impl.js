@@ -21,140 +21,110 @@ import type {Stringifier, Predicate} from 'flow-common-types';
 
 import {Node} from 'simple-trees';
 
-
-/*
-Guide to naming conventions used
--------------------------------
-GTP            : Generic Type Parameter
-ISomeType      : Interface type for class structural (not nominal) typing
-SomeFunctionFT : Function Type
- */
-
 import type {
-    IGameState, PlayerOneOrTwo, BrancherFT, EvaluatorFT, MinMaxFT
+    IGameRules, EvaluatorFT, MinMaxFT, TMinMaxResult, TMinMaxStatistics
 } from './minmax-interface.js'
 
-import      {PLAYER1}                from './minmax-interface.js';
-import      {PLAYER2}                from './minmax-interface.js';
-import      {theOtherPlayer}         from './minmax-interface.js';
 
+class EvaluationAndMove<MoveGTP> {
+    move: ?MoveGTP
+    evaluation: number;
 
-import {GameStateWtEvaluation}       from './minmax-common.js';
-import {generateMoveTree}            from './minmax-common.js';
-
-
-
-function evaluateLeafNodes<MoveGTP, GameStateGTP: IGameState<MoveGTP>>
-    (   moveTree : Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>
-     , evaluator : EvaluatorFT <MoveGTP, GameStateGTP>
-    ): void
-    {
-        moveTree.depthFirstTraversal(function(n: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>) {
-            if (n.isLeaf()) {
-                const evaluation: number = evaluator(n.value.gameState);
-                n.value.evaluation = evaluation;                                  
-            }
-        }, true , true);
+    constructor(move: ?MoveGTP, evaluation: number) {
+        this.move = move;
+        this.evaluation = evaluation;
     }
 
+}
 
-function pullUpNodesEvaluationWithMinmax
-<MoveGTP, GameStateGTP: IGameState<MoveGTP>>
-    (
-        moveTree : Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>
-    ): void {
-        function allChildrenHaveBeenEvaluated(n: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>) {
-            function predicate(n: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>): boolean {
-                return n.value.evaluation!==null;
-            }
-            return n.allChildrenSatisfy(predicate);
-        }
-        moveTree.depthFirstTraversal(function(n: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>) {
-            if (!n.isLeaf()) {
-                assert.isTrue(allChildrenHaveBeenEvaluated(n)); // TODO: not in production, only in test
-                function reducedChildrenEvaluation(children: Map<MoveGTP, Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>>, f: (number,number)=>number, initial: number): number {
-                    return Array.from(children).reduce( (accum: number, [_, v: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>>]) => {
-                        const evaluation: ?number = v.value.evaluation;
-                        if (evaluation!=null)
-                            return f(accum, evaluation);
-                        else
-                            throw new Error('impossible, the children should be evaluated at this point');
-                    }, initial);
-                }                
-                const children: ?Map<MoveGTP, Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>> = n.children;
-                if (children!=null) {
-                    if (n.value.gameState.playerToMove()===PLAYER1)
-                        n.value.evaluation = reducedChildrenEvaluation(children, Math.max, Number.NEGATIVE_INFINITY);
-                    else
-                        n.value.evaluation = reducedChildrenEvaluation(children, Math.min, Number.POSITIVE_INFINITY);
-                } else {
-                    assert.isTrue(children===null); // we can't have undefined children
-                    assert.fail(0,1,"impossible, I've already checked that this node is not a leaf");
-                }
-            }
-        }
-                                     , true    // including this node, although this isn't strictly necessary
-                                     , false); // children first, then parents
-    }
-
-function findBestMoveByExaminingTheChildrenOfTheRootOnly
-    <MoveGTP, GameStateGTP: IGameState<MoveGTP>>
-    (root: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>): MoveGTP {
-        assert.isTrue(root.parent  ===null);
-        assert.isTrue(root.children !=null);  // you shouldn't call this method on a childless root !
-        const rootEvaluation: ?number = root.value.evaluation;
-        if (rootEvaluation!=null) {
-            let bestMove: ?MoveGTP = null;
-            const BEST_MOVE_FOUND = {};
-            if (root.children!=null) {
-                try {
-
-                    root.children.forEach( (node: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>, move: MoveGTP) => {
-                        if (node.value.evaluation===rootEvaluation) {
-                            bestMove = move; // there may be ties but we simply return the first one we find
-                            throw BEST_MOVE_FOUND;
-                        }
-                    } );
-                    throw new Error('impossible to iterate the children without encountering the best move');
-                } catch (e) {
-                    if (e===BEST_MOVE_FOUND) {
-                        if (bestMove!=null)
-                            return bestMove;
-                        else
-                            throw new Error();
-                    }
-                    else throw e;
-                }
-            } else throw new Error("we've already asserted the root has children at the beginning of this method");
-        } else throw new Error('root must be evaluated at this point');
-    }
-
-function minmax <SideGTP
-                , MoveGTP
-                , GameStateGTP: IGameState<MoveGTP>
-                >
+function minmax <GameStateGTP, MoveGTP>
     (gameState           : GameStateGTP
-     , brancher          : BrancherFT<MoveGTP, GameStateGTP>
-     , evaluator         : EvaluatorFT<MoveGTP, GameStateGTP>
+     , gameRules         : IGameRules<GameStateGTP, MoveGTP>
+     , evaluator         : EvaluatorFT<GameStateGTP>
      , plies             : number
+     , alpha             : number
+     , beta              : number     
+     , statisticsHook    : ?TMinMaxStatistics<GameStateGTP>
     )
-    : MoveGTP {
-        assert.isFalse(gameState.isTerminalState(), 'minmax called on terminal state');
+    : TMinMaxResult<MoveGTP> {
+
+    
+        function _minmax(gameState           : GameStateGTP
+                              , pliesRemaining    : number
+                              , alpha             : number
+                              , beta              : number                              
+                              , maximizing        : boolean
+                             ): EvaluationAndMove<MoveGTP> {
+                                 if (statisticsHook!=null) statisticsHook.visitedNode(gameState);
+                                 if (gameRules.isTerminalState(gameState) || (pliesRemaining===0)) {
+                                     if (statisticsHook!=null) statisticsHook.evaluatedLeafNode(gameState);
+                                     return new EvaluationAndMove(null, evaluator(gameState)*(maximizing?1:-1));
+                                 } else {
+                                     // construct the children and evaluate them
+                                     const moves: Array<MoveGTP> = gameRules.brancher(gameState);
+                                     assert.isTrue(moves.length > 0); // given that this is not a terminal state we should expect at least one possible move
+                                     const NUM_OF_MOVES: number = moves.length;
+                                     assert.isTrue(NUM_OF_MOVES>0);
+                                     if (maximizing) {
+                                         var v       : number   = Number.NEGATIVE_INFINITY;
+                                         var bestMove: ?MoveGTP = null;
+                                         for (let i = 0; i < NUM_OF_MOVES ; i++) {
+                                             const nextState: (GameStateGTP) = gameRules.nextState(gameState, moves[i]);
+                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, v, beta, !maximizing);
+                                             if (nextStateEval!=null) {
+                                                 if (nextStateEval.evaluation > v) {
+                                                     if (nextStateEval.evaluation===Number.POSITIVE_INFINITY) // no need to look any further
+                                                         return new EvaluationAndMove(moves[i], nextStateEval.evaluation); 
+                                                     v        = nextStateEval.evaluation
+                                                     bestMove = moves[i];
+                                                 }
+                                             } else throw new Error('impossible at this point');
+                                             if (v>beta) {
+                                                 if (statisticsHook!=null) statisticsHook.prunedNodes(gameState, true, v, beta, i);
+                                                 break;
+                                             }
+                                         }
+                                         assert.isTrue((v===Number.NEGATIVE_INFINITY) || (bestMove!=null));
+                                         return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
+                                     } else {
+                                         var v       : number   = Number.POSITIVE_INFINITY;
+                                         var bestMove: ?MoveGTP = null;
+                                         for (let i = 0; i < NUM_OF_MOVES ; i++) {
+                                             const nextState: (GameStateGTP) = gameRules.nextState(gameState, moves[i]);
+                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, alpha, v, !maximizing);
+                                             if (nextStateEval!=null) {
+                                                 if (nextStateEval.evaluation===Number.NEGATIVE_INFINITY) // no need to look any further
+                                                     return new EvaluationAndMove(moves[i], nextStateEval.evaluation);                                                  
+                                                 if (nextStateEval.evaluation<v) {
+                                                     v        = nextStateEval.evaluation;
+                                                     bestMove = moves[i];
+                                                 }
+                                             } else throw new Error('impossible at this point');
+                                             if (v<alpha) {
+                                                 if (statisticsHook!=null) statisticsHook.prunedNodes(gameState, false, v, alpha, i);
+                                                 break;
+                                             }
+                                         }
+                                         assert.isTrue((v===Number.POSITIVE_INFINITY) || (bestMove!=null));
+                                         return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
+                                     }
+                                 }
+                             }
+        assert.isFalse(gameRules.isTerminalState(gameState), 'minmax called on terminal state');
         assert.isTrue(Number.isInteger(plies) && (plies>=1), `illegal plies for minmax: ${plies}`);
-        const moveTree: Node<GameStateWtEvaluation<MoveGTP, GameStateGTP>, MoveGTP>
-                  = generateMoveTree                       (gameState, brancher, plies);
-        
-        evaluateLeafNodes                                      (moveTree, evaluator);
-        pullUpNodesEvaluationWithMinmax                        (moveTree);
-        return findBestMoveByExaminingTheChildrenOfTheRootOnly (moveTree);
-     }
+        const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who starts first is the maximizing player
+        assert.isTrue(evalAndMove.move!=null);
 
-(minmax: MinMaxFT<mixed, mixed, any>)
+        if (evalAndMove.move!=null)
+            return {
+                bestMove  : evalAndMove.move,
+                evaluation: evalAndMove.evaluation
+            };
+        else
+            throw new Error("impossible at this point as I've already asserted that the move is not null");
+    }
 
+(minmax: MinMaxFT<mixed, mixed>)
 
-exports.minmax         = minmax;
-exports.generateMoveTree = generateMoveTree;
-exports.evaluateLeafNodes = evaluateLeafNodes;
-exports.pullUpNodesEvaluationWithMinmax = pullUpNodesEvaluationWithMinmax;
-
+exports.minmax = minmax;
 
