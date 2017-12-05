@@ -76,7 +76,7 @@ export type TMinMaxStatistics<GameStateGTP> =
     {
      visitedNode       (n: GameStateGTP): void,
      evaluatedLeafNode (n: GameStateGTP): void,
-     prunedNodes       (n: GameStateGTP, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number): void
+     pruningIncident   (n: GameStateGTP, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number): void
     };
 
 /* The minmax function type (MinMaxFT) returns both the best move and the evaluation of the root

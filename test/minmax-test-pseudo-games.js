@@ -94,7 +94,7 @@ function newStatistics() {
         getLeafNodesEvaluated : function() {return leafNodesEvaluated;},
         evaluatedLeafNode     : function() {       leafNodesEvaluated++;},
         getNodesPruned        : function() {return nodesPruned;},
-        prunedNodes           : function(n: NodeT, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number) {
+        pruningIncident       : function(n: NodeT, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number) {
             const o = new PruneIncidentInfo(n, aboveBetaOrBelowAlpha, v, alphaOrBetaValue, index);
             nodesPruned.push(o);
         }
@@ -206,6 +206,159 @@ function pseudoGameLogic3 (NodeC): NodeT {
 }
 
 
+function pseudoGameLogic4 (a2, c, c2): NodeT {
+
+    const root = new Node(); 
+    const a    = new Node();
+    const a1   = new Node();
+//    const a2   = new Node();
+    const a1a  = new Node(5);
+    const a1b  = new Node(1);    
+    const a2a  = new Node(8);
+    const a2b  = new Node(); // leaf node but we know it will get pruned
+
+    const b    = new Node();
+    const b1   = new Node();
+    const b2   = new Node();
+    const b1a  = new Node(9);
+    const b1b  = new Node(7);    
+    const b2a  = new Node(4);
+    const b2b  = new Node(5);
+    
+    
+    const c1   = new Node();
+    const c1a  = new Node(0);
+    const c1b  = new Node(7);    
+  //  const c2   = new Node();
+    const c2a  = new Node();
+    const c2a1 = new Node(8);
+    const c2a2 = new Node(10);
+    const c2a3 = new Node(11);
+    const c2a4 = new Node(12);
+    const c2b  = new Node();   // leaf node but we know it will get pruned
+    const c2c  = new Node();   // ----------------------------------------
+
+    const c3 = new Node(4);
+    const c4 = new Node();
+    const c5 = new Node();
+    const c6 = new Node();    
+
+
+    
+    root.setn('a',  a);
+    root.setn('b',  b);
+    root.setn('c',  c);
+    
+    a   .setn('1' , a1);
+    a   .setn('2' , a2);
+    a1  .setn('a' , a1a);
+    a1  .setn('b' , a1b);
+    a2  .setn('a' , a2a);
+    a2  .setn('b' , a2b);
+
+    
+    b   .setn('1',  b1);
+    b   .setn('2',  b2);
+    b1  .setn('a',  b1a);
+    b1  .setn('b',  b1b);
+    b2  .setn('a',  b2a);
+    b2  .setn('b',  b2b);
+
+    c   .setn('1',  c1);
+    c   .setn('2',  c2);
+    c   .setn('3',  c3);
+    c   .setn('4',  c4);
+    c   .setn('5',  c5);    
+    c   .setn('6',  c6);    
+    c1  .setn('a',  c1a);
+    c1  .setn('b',  c1b);
+
+    c2  .setn('a',  c2a);
+    c2  .setn('b',  c2b);
+    c2  .setn('c',  c2c);
+
+    c2a .setn('1',  c2a1);
+    c2a .setn('2',  c2a2);
+    c2a .setn('3',  c2a3);
+    c2a .setn('4',  c2a4);
+
+
+
+
+
+    /*    X                            maximizing
+          +--a-->N                     minimizing
+          |      +--1-->X              maximizing
+          |      |      +--a-->5
+          |      |      +--b-->1
+          |      |
+          |      +--2-->X              maximizing node a2
+          |             +--a-->8   <-- pruning happens here (and is reported on the father)
+          |             +--b-->NA  <-- this node is *never* evaluated
+          +--b-->N                     minimizing 
+          |      +--1-->X              maximizing
+          |      |      +--a-->9
+          |      |      +--b-->7
+          |      |
+          |      +--2-->X              maximizing
+          |             +--a-->4
+          |             +--b-->5
+          +--c-->N                     minimizing
+                 +--1-->X              maximizing
+                 |      +--a-->0
+                 |      +--b-->7
+                 |
+                 +--2-->X              maximizing node c2
+                 |      +--a-->N       minimizing <-- pruning happens here (and is reported on the father)
+                 |      |      +--1--> 8
+                 |      |      +--2--> 10
+                 |      |      +--3--> 11
+                 |      |      +--4--> 12
+                 |      +--b-->NA      <-- this node is *never* evaluated
+                 |      +--b-->NA      <-- this node is *never* evaluated
+                 +--3-->4    <-- pruning happens here (and is reported on the father)
+                 +--4--> NA <-- this node is *never* evaluated
+                 +--5--> NA <-- this node is *never* evaluated
+                 +--6--> NA <-- this node is *never* evaluated
+    */
+
+    return root;
+}
+
+function pseudoGameLogic5 (): NodeT {
+
+    const root = new Node(); 
+    const a    = new Node(1);
+    const b    = new Node(4);
+    const c    = new Node(3);
+    const d    = new Node(2);    
+    const d1   = new Node(9);
+    const d2   = new Node(7);
+    const d3   = new Node(8);    
+
+
+
+    root.setn('a' ,  a);
+    root.setn('b' ,  b);
+    root.setn('c' ,  c);
+    root.setn('d' ,  d);
+    d   .setn('1' ,  d1);
+    d   .setn('2' ,  d2);
+
+
+    /*    X          maximizing
+          +--a-->1       
+          +--b-->4              
+          +--c-->3
+          +--d-->2   minimizing
+                 +--d1-->9
+                 +--d2-->7
+                 +--d3-->8
+    */
+
+    return root;
+}
+
 describe('recursive minmax on various pseudo games', function() {
     it('game 1', function() {
         [3,4,10,100,1000].forEach(function(ply) {
@@ -260,5 +413,50 @@ describe('recursive minmax on various pseudo games', function() {
             const EXPECTED_PRUNE_INCIDENT_INFO = new PruneIncidentInfo(NodeC, true, 8, 5, 0);
             assert.isTrue(stats.getNodesPruned()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO));
         });
-    });        
+    });
+    it('game 4', function() {
+        [4,10,100,1000].forEach(function(ply) {
+            const stats = newStatistics();
+            const a2 = new Node();
+            const c  = new Node();            
+            const c2 = new Node();
+            const x: TMinMaxResult<string> = minmax(pseudoGameLogic4(a2, c, c2)
+                                                         , GameRules
+                                                         , evaluator
+                                                         , ply
+                                                         , Number.NEGATIVE_INFINITY
+                                                         , Number.POSITIVE_INFINITY
+                                                         , stats);
+            assert.strictEqual(x.bestMove  , 'a');
+            assert.strictEqual(x.evaluation,   5);
+            assert.strictEqual(stats.getTotalNodesVisited (), 25);
+            assert.strictEqual(stats.getLeafNodesEvaluated(), 14);
+            assert.strictEqual(stats.getNodesPruned       ().length, 3); // rename that, that's not nodes pruned, its # of pruning incidents
+            const EXPECTED_PRUNE_INCIDENT_INFO_on_node_a2 = new PruneIncidentInfo(a2, true , 8, 5, 0);
+            const EXPECTED_PRUNE_INCIDENT_INFO_on_node_c  = new PruneIncidentInfo( c, false, 4, 5, 2);
+            const EXPECTED_PRUNE_INCIDENT_INFO_on_node_c2 = new PruneIncidentInfo(c2, true , 8, 7, 0);
+            assert.isTrue(stats.getNodesPruned()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_a2));
+            assert.isTrue(stats.getNodesPruned()[1].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c2));
+            assert.isTrue(stats.getNodesPruned()[2].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c ));
+        });
+    });
+    it('game 5', function() {
+        [1,2,3,4,10,100,1000].forEach(function(ply) {
+            const stats = newStatistics();
+            const x: TMinMaxResult<string> = minmax(pseudoGameLogic5()
+                                                         , GameRules
+                                                         , evaluator
+                                                         , ply
+                                                         , Number.NEGATIVE_INFINITY
+                                                         , Number.POSITIVE_INFINITY
+                                                    , stats);
+            if (ply===1) {
+                assert.strictEqual(x.bestMove  , 'b');
+                assert.strictEqual(x.evaluation,   4);
+            } else {
+                assert.strictEqual(x.bestMove  , 'd');
+                assert.strictEqual(x.evaluation,   7);                
+            }
+        });
+    });    
 });

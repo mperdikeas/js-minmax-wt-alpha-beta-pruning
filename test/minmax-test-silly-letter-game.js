@@ -87,7 +87,7 @@ function newStatistics() {
         getLeafNodesEvaluated : function()             {return leafNodesEvaluated;},
         evaluatedLeafNode     : function(_: GameState) {       leafNodesEvaluated++;},
         getNodesPruned        : function()             {return nodesPruned;},
-        prunedNodes           : function() {nodesPruned++;}
+        pruningIncident       : function() {nodesPruned++;}
     };
 }
 
@@ -173,16 +173,12 @@ describe('minmax on letter game', function() {
                                                         , stats);
                 assert.strictEqual(s.bestMove, 'a');
                 assert.strictEqual(s.evaluation, 0); // (since the game never finishes with perfect play)
-                const rootNodes            = 1;
-                const ply1Nodes            = 3; 
-                const ply2NodesTerminal    = 3;
-                const ply2NodesNonTerminal = 6;
-                const ply3Nodes            = 18;
 
 
-                assert.strictEqual(stats.getTotalNodesVisited() , rootNodes+ply1Nodes+ply2NodesTerminal+ply2NodesNonTerminal+ply3Nodes);
-                assert.strictEqual(stats.getLeafNodesEvaluated(), ply2NodesTerminal + ply3Nodes);
-                assert.strictEqual(stats.getNodesPruned(), 0);
+
+                assert.strictEqual(stats.getTotalNodesVisited()  , 19);
+                assert.strictEqual(stats.getLeafNodesEvaluated() , 11);
+                assert.strictEqual(stats.getNodesPruned()        ,  3);
             });                
         });
     });

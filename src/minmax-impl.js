@@ -79,8 +79,15 @@ function minmax <GameStateGTP, MoveGTP>
                                                      bestMove = moves[i];
                                                  }
                                              } else throw new Error('impossible at this point');
-                                             if (v>beta) {
-                                                 if (statisticsHook!=null) statisticsHook.prunedNodes(gameState, true, v, beta, i);
+                                             if ((v>=beta) && (i!==NUM_OF_MOVES-1)) { /* sse-1512513725: in the various resources on the algorithm I
+                                                                                         always see this as (v>beta) but I am confident there is no
+                                                                                         reason not to use ">=" instead as this is better (it
+                                                                                         increases the likelihood of pruning). Also, if this is
+                                                                                         the last child, we don't consider it a true pruning incident
+                                                                                         for statistical purposes (the logic remains effectively the
+                                                                                         same as for the last child we are going to break out of the
+                                                                                         loop anyways */
+                                                 if (statisticsHook!=null) statisticsHook.pruningIncident(gameState, true, v, beta, i);
                                                  break;
                                              }
                                          }
@@ -100,8 +107,8 @@ function minmax <GameStateGTP, MoveGTP>
                                                      bestMove = moves[i];
                                                  }
                                              } else throw new Error('impossible at this point');
-                                             if (v<alpha) {
-                                                 if (statisticsHook!=null) statisticsHook.prunedNodes(gameState, false, v, alpha, i);
+                                             if ((v<=alpha) && (i!==NUM_OF_MOVES-1)) { // see sse-1512513725 (mutatis mutandis)
+                                                 if (statisticsHook!=null) statisticsHook.pruningIncident(gameState, false, v, alpha, i);
                                                  break;
                                              }
                                          }
