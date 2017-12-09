@@ -56,7 +56,7 @@ function evaluator(n: NodeT): number {
     if (n.value!=null)
         return n.value*( (n.depthFromRoot()%2===1)?-1:1 ); // this is deep. I'll write a more extended comment when I find the time ... (hint: it has to do with the way I construct the test trees and the way the evaluator function is supposed to work (it always evaluates from the perspective of the moving player and has no concept of maximizing and minimizing player)
     else
-        throw new Error('bug #3 in my pseudo-game logic');
+        throw new Error('bug #3 in my pseudo-game logic (or maybe the depth is not set deep enough for the test tree and I have reached a leaf node with no value');
 }
 
 (evaluator: EvaluatorFT<NodeT>);
@@ -87,16 +87,16 @@ class PruneIncidentInfo {
 function newStatistics() {
     let totalNodesVisited  = 0;
     let leafNodesEvaluated = 0;
-    let nodesPruned        = [];
+    let pruningIncident    = [];
     return {
         getTotalNodesVisited  : function() {return totalNodesVisited;},
         visitedNode           : function() {       totalNodesVisited++;},
         getLeafNodesEvaluated : function() {return leafNodesEvaluated;},
         evaluatedLeafNode     : function() {       leafNodesEvaluated++;},
-        getNodesPruned        : function() {return nodesPruned;},
+        getPruningIncidents        : function() {return pruningIncident;},
         pruningIncident       : function(n: NodeT, aboveBetaOrBelowAlpha: boolean, v: number, alphaOrBetaValue: number, index: number) {
             const o = new PruneIncidentInfo(n, aboveBetaOrBelowAlpha, v, alphaOrBetaValue, index);
-            nodesPruned.push(o);
+            pruningIncident.push(o);
         }
     };
 }
@@ -359,6 +359,62 @@ function pseudoGameLogic5 (): NodeT {
     return root;
 }
 
+
+/* This game will be evaluated by passing a beta of 3.
+   Essentially this means that maximizing nodes will take anything >= 3 as a good enough value
+   and prune remaining siblings.
+*/
+function pseudoGameLogic6 (root): NodeT {
+
+    const a    = new Node(1);
+    const b    = new Node(4);
+    const c    = new Node(); // leaf node and that would normally be a problem, but we will evaluate this game with a beta of 3 and thus pruning will be activated on node [b] (i.e. nodes [c] and [d] will never be evaluated)
+    const d    = new Node();
+
+    root.setn('a' ,  a);
+    root.setn('b' ,  b);
+    root.setn('c' ,  c);
+    root.setn('d' ,  d);
+
+    /*    X          maximizing
+          +--a-->1
+          +--b-->4
+          +--c-->X
+          +--d-->X
+    */
+
+    return root;
+}
+
+// game tree evaluated with an alpha of 10 and a beta of 6
+function pseudoGameLogic7 (root, c): NodeT {
+
+    root.setn('a' , new Node(1));
+    root.setn('b' , new Node(5));
+
+    c   .setn('1' , new Node(12));
+    c   .setn('2' , new Node( 9));
+    c   .setn('3' , new Node());
+    c   .setn('4' , new Node());
+    root.setn('c' ,  c);
+    
+    const d       = new Node(100);
+    root.setn('d' ,  d);
+
+    /*    X          maximizing
+          +--a-->1
+          +--b-->5
+          +--c-->X   minimizing  <-- pruning happens here because node c is evaluated to the value of 9 (following pruning at node c2) and 9 is good enough for a maximizing node, given a beta of 6
+                 +---1--->12
+                 +---2---> 9 <-- pruning happens here first as 9 is less than the alpha of 10 and thus assumed to good enough for a minimizing node. As such we lose sight of the fact that the minimizing player (the opponents) might in fact be able to minimize even further below if we ever end up on node c (i.e. below the value of 9) by chosing one of the c3 or c4 nodes which we disdain to evaluate. In other words we assume that once the opponent gets here he'll grab the good enough value of 9 without analyzing the situation further.
+                 +---3---> X
+                 +---4---> X
+          +--d-->100
+    */
+
+    return root;
+}
+
 describe('recursive minmax on various pseudo games', function() {
     it('game 1', function() {
         [3,4,10,100,1000].forEach(function(ply) {
@@ -374,7 +430,7 @@ describe('recursive minmax on various pseudo games', function() {
             assert.strictEqual(x.evaluation,   1);
             assert.strictEqual(stats.getTotalNodesVisited (), 7);
             assert.strictEqual(stats.getLeafNodesEvaluated(), 5);
-            assert.strictEqual(stats.getNodesPruned       ().length, 0);
+            assert.strictEqual(stats.getPruningIncidents  ().length, 0);
         });
     });
     it('game 2', function() {
@@ -391,7 +447,7 @@ describe('recursive minmax on various pseudo games', function() {
             assert.strictEqual(x.evaluation,   1);
             assert.strictEqual(stats.getTotalNodesVisited (), 9);
             assert.strictEqual(stats.getLeafNodesEvaluated(), 6);
-            assert.strictEqual(stats.getNodesPruned       ().length, 0);            
+            assert.strictEqual(stats.getPruningIncidents  ().length, 0);
         });
     });
     it('game 3', function() {
@@ -409,9 +465,9 @@ describe('recursive minmax on various pseudo games', function() {
             assert.strictEqual(x.evaluation,   5);
             assert.strictEqual(stats.getTotalNodesVisited (), 7);
             assert.strictEqual(stats.getLeafNodesEvaluated(), 3);
-            assert.strictEqual(stats.getNodesPruned       ().length, 1);
+            assert.strictEqual(stats.getPruningIncidents  ().length, 1);
             const EXPECTED_PRUNE_INCIDENT_INFO = new PruneIncidentInfo(NodeC, true, 8, 5, 0);
-            assert.isTrue(stats.getNodesPruned()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO));
+            assert.isTrue(stats.getPruningIncidents()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO));
         });
     });
     it('game 4', function() {
@@ -431,13 +487,13 @@ describe('recursive minmax on various pseudo games', function() {
             assert.strictEqual(x.evaluation,   5);
             assert.strictEqual(stats.getTotalNodesVisited (), 25);
             assert.strictEqual(stats.getLeafNodesEvaluated(), 14);
-            assert.strictEqual(stats.getNodesPruned       ().length, 3); // rename that, that's not nodes pruned, its # of pruning incidents
+            assert.strictEqual(stats.getPruningIncidents  ().length, 3);
             const EXPECTED_PRUNE_INCIDENT_INFO_on_node_a2 = new PruneIncidentInfo(a2, true , 8, 5, 0);
             const EXPECTED_PRUNE_INCIDENT_INFO_on_node_c  = new PruneIncidentInfo( c, false, 4, 5, 2);
             const EXPECTED_PRUNE_INCIDENT_INFO_on_node_c2 = new PruneIncidentInfo(c2, true , 8, 7, 0);
-            assert.isTrue(stats.getNodesPruned()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_a2));
-            assert.isTrue(stats.getNodesPruned()[1].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c2));
-            assert.isTrue(stats.getNodesPruned()[2].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c ));
+            assert.isTrue(stats.getPruningIncidents()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_a2));
+            assert.isTrue(stats.getPruningIncidents()[1].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c2));
+            assert.isTrue(stats.getPruningIncidents()[2].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_node_c ));
         });
     });
     it('game 5', function() {
@@ -457,6 +513,43 @@ describe('recursive minmax on various pseudo games', function() {
                 assert.strictEqual(x.bestMove  , 'd');
                 assert.strictEqual(x.evaluation,   7);                
             }
+        });
+    });
+    it('game 6 - with beta equal to 3', function() {
+        [1,2,3,4,10,100,1000].forEach(function(ply) {
+            const stats = newStatistics();
+            const pruningIncidentFatherNode = new Node();
+            const x: TMinMaxResult<string> = minmax(pseudoGameLogic6(pruningIncidentFatherNode)
+                                                         , GameRules
+                                                         , evaluator
+                                                         , ply
+                                                         , Number.NEGATIVE_INFINITY
+                                                         , 3
+                                                    , stats);
+            assert.strictEqual(x.bestMove  , 'b');
+            assert.strictEqual(x.evaluation,   4);
+            assert.strictEqual(stats.getPruningIncidents       ().length, 1);
+            const EXPECTED_PRUNE_INCIDENT_INFO_on_root = new PruneIncidentInfo(pruningIncidentFatherNode, true, 4, 3, 1);
+            assert.isTrue(stats.getPruningIncidents()[0].equals(EXPECTED_PRUNE_INCIDENT_INFO_on_root));
+        });
+    });
+    it('game 7 - with alpha equal to 9 and beta equal to 4', function() {
+        [42,10,100,1000].forEach(function(ply) {
+            const stats = newStatistics();
+            const root = new Node();
+            const c    = new Node();
+            const x: TMinMaxResult<string> = minmax(pseudoGameLogic7(root, c)
+                                                         , GameRules
+                                                         , evaluator
+                                                         , ply
+                                                         ,10
+                                                         , 6
+                                                    , stats);
+            assert.strictEqual(x.bestMove  , 'c');
+            assert.strictEqual(x.evaluation,   9);
+            assert.strictEqual(stats.getPruningIncidents().length, 2);
+            assert.isTrue(stats.getPruningIncidents()[0].equals(new PruneIncidentInfo(   c, false, 9,10, 1)));
+            assert.isTrue(stats.getPruningIncidents()[1].equals(new PruneIncidentInfo(root, true , 9, 6, 2)));
         });
     });    
 });

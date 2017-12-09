@@ -70,7 +70,7 @@ function minmax <GameStateGTP, MoveGTP>
                                          var bestMove: ?MoveGTP = null;
                                          for (let i = 0; i < NUM_OF_MOVES ; i++) {
                                              const nextState: (GameStateGTP) = gameRules.nextState(gameState, moves[i]);
-                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, v, beta, !maximizing);
+                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, Math.max(v, alpha), beta, !maximizing);
                                              if (nextStateEval!=null) {
                                                  if (nextStateEval.evaluation > v) {
                                                      if (nextStateEval.evaluation===Number.POSITIVE_INFINITY) // no need to look any further
@@ -98,7 +98,7 @@ function minmax <GameStateGTP, MoveGTP>
                                          var bestMove: ?MoveGTP = null;
                                          for (let i = 0; i < NUM_OF_MOVES ; i++) {
                                              const nextState: (GameStateGTP) = gameRules.nextState(gameState, moves[i]);
-                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, alpha, v, !maximizing);
+                                             const nextStateEval: ?EvaluationAndMove<MoveGTP> = _minmax(nextState, pliesRemaining-1, alpha, Math.min(v,beta), !maximizing);
                                              if (nextStateEval!=null) {
                                                  if (nextStateEval.evaluation===Number.NEGATIVE_INFINITY) // no need to look any further
                                                      return new EvaluationAndMove(moves[i], nextStateEval.evaluation);                                                  

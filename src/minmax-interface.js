@@ -81,6 +81,16 @@ export type TMinMaxStatistics<GameStateGTP> =
 
 /* The minmax function type (MinMaxFT) returns both the best move and the evaluation of the root
    node. It assumes that the moving player at the root is also the maximizing player.
+   
+   Another way to think of the alpha and beta values is the following:
+   * alpha: execute the algorithm (with the moving player being the maximizing player) assuming that the
+            opponnent will be happy with any value less than alpha and will not try to minimize any further
+            once he finds a move that yields an evaluation less than alpha. Default initial value: negative infinity.
+     beta:  execute the algorithm and (while on a maximizing node) don't bother searching for anything better than
+            beta. Default initial value: positive infinity.
+   It should NOT be assumed that the algorithm will return a value in the [alpha, beta] range. In fact it is quite
+   possible that you invoke the algorithm with alpha >= beta (e.g. see test file minmax-test-pseudo-games.js and the
+   pseudoGameLogic7 test game). Though I don't know whether that makes any sense.
  */
 export type MinMaxFT<GameStateGTP, MoveGTP> =
     (gameState   : GameStateGTP
