@@ -12,11 +12,11 @@ assert.isOk(Node);
 import type {Exact} from 'flow-common-types';
 
 
-import type {ListMovesFT}                 from '../lib/index.js';
-import type {IGameRules}                  from '../lib/index.js';
-import type {EvaluateFT}                  from '../lib/index.js';
-import type {TMinMaxResult}               from '../lib/index.js';
-import      {minmax}                      from '../lib/index.js';
+import type {ListMovesFT}                 from '../src/index.js';
+import type {IGameRules}                  from '../src/index.js';
+import type {EvaluateFT}                  from '../src/index.js';
+import type {TMinMaxResult}               from '../src/index.js';
+import      {minmax}                      from '../src/index.js';
 
 
 type NodeT = Node<?number, string>;

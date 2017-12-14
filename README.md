@@ -1,8 +1,17 @@
-# js-minmax-wt-alpha-beta-pruning
+minmax-wt-alpha-beta-pruning
+===============================
 
-*js-minmax-wt-alpha-beta-pruning* is JavaScript library implementing
+
+*minmax-wt-alpha-beta-pruning* is JavaScript library implementing
 a **generic** min-max algorithm with alpha-beta pruning that can work with **any** game supplied by
 a client programmer.
+
+
+# Installation
+
+npm install minmax-wt-alpha-beta-pruning
+
+# Features
 
 The basic min-max algorithm is rather obvious and straightforward, any coder is capable of independently
 inventing it even if they have read nothing about it. The clever part is the performance optimization
@@ -91,9 +100,11 @@ on a state in which no more moves are possible. We call such a state, a "termina
 
 So it should look like this:
 
-    function terminalStateEval(gameState) {
-        // returns null or a number (do not mutate gameState)
-    }
+```js
+function terminalStateEval(gameState) {
+    // returns null or a number (do not mutate gameState)
+}
+```    
 
 Pay extra attention to the following point:
 
@@ -149,12 +160,14 @@ moves according to the rules of the game. It's as simple as that.
 
 So it should look like this:
 
-    function listMoves(gameState) {
-        // do not mutate gameState
-        const returnValue = []
-        // populate with at least one (1) valid move
-        return returnValue;
+```js
+function listMoves(gameState) {
+    // do not mutate gameState
+    const returnValue = []
+    // populate with at least one (1) valid move
+    return returnValue;
     }
+```    
 
 The game engine will never call *listMoves* on a terminal game state. As such, *listMoves* should always return a
 non-empty list of valid moves (the engine actually makes that assertion internally) as if there are
@@ -173,9 +186,12 @@ indeed made. That's all. The previous game state object should not be mutated.
 
 So it should look like this:
 
-    function nextState(gameState, moveToMake) {
-        // returns a new game state object; does not mutate gameState
-    }
+
+```js
+function nextState(gameState, moveToMake) {
+    // returns a new game state object; does not mutate gameState
+}
+```    
 
 
 ## evaluate
@@ -193,9 +209,11 @@ returned from *terminalStateEval* as the evaluation of such a state.
 
 So your *evaluate* function should look like this:
 
-    function evaluate(gameState) {
-        // returns a number, does not mutate gameState
-    }
+```js
+function evaluate(gameState) {
+    // returns a number, does not mutate gameState
+}
+```
 
 
 The engine is using *terminalStateEval* to realize if the game has ended, it is not
@@ -370,16 +388,17 @@ the API of the library and can be consulted in lieu or alongside this documentat
 
 E.g. the type of the *minmax* function is defined in *minmax-interface.js* thus:
 
-    export type MinMaxFT<GameStateGTP, MoveGTP> =
-        (gameState   : GameStateGTP
-         , gameRules : IGameRules<GameStateGTP, MoveGTP>
-         , evaluate: EvaluateFT<GameStateGTP>
-         , plies: number
-         , alpha?: number
-         , beta?:  number
-         , statisticsHook?: TMinMaxStatistics<GameStateGTP>
-        ) => TMinMaxResult<MoveGTP>;
-
+```js
+export type MinMaxFT<GameStateGTP, MoveGTP> =
+    (gameState   : GameStateGTP
+     , gameRules : IGameRules<GameStateGTP, MoveGTP>
+     , evaluate: EvaluateFT<GameStateGTP>
+     , plies: number
+     , alpha?: number
+     , beta?:  number
+     , statisticsHook?: TMinMaxStatistics<GameStateGTP>
+    ) => TMinMaxResult<MoveGTP>;
+```
 
 You can see from the above type definition that function *minmax* uses generic type parameters (that's what
 *GTP* stands for) and is agnostic as to the actual structures the client programmer uses to represent

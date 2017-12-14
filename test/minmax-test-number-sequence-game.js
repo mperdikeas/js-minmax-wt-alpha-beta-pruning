@@ -28,11 +28,10 @@ type Move = 1 | 2 | 3 | 4;
 
 
 
-import type {IGameRules}                  from '../lib/index.js';
-import type {EvaluateFT}                  from '../lib/index.js';
-import type {TMinMaxResult}               from '../lib/index.js';
-
-import      {minmax}                      from '../lib/index.js';
+import type {IGameRules}                  from '../src/index.js';
+import type {EvaluateFT}                  from '../src/index.js';
+import type {TMinMaxResult}               from '../src/index.js';
+import      {minmax}                      from '../src/index.js';
 
 
 const GameRules: IGameRules<number, Move> = (function(){
