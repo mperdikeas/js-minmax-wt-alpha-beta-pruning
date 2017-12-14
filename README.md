@@ -1,10 +1,7 @@
-minmax-wt-alpha-beta-pruning
-===============================
+# minmax-wt-alpha-beta-pruning
 
-
-*minmax-wt-alpha-beta-pruning* is JavaScript library implementing
-a **generic** min-max algorithm with alpha-beta pruning that can work with **any** game supplied by
-a client programmer.
+A JavaScript library implementing
+a **generic** minmax engine with alpha-beta pruning that can work with **any** game supplied by a client programmer.
 
 
 # Installation

@@ -1,7 +1,7 @@
 {
   "name": "minmax-wt-alpha-beta-pruning",
-  "version": "0.9.10",
-  "description": "",
+  "version": "0.9.11",
+  "description": "A generic minmax algorithm engine (with alpha-beta pruning) that can work with any game supplied by the user",
   "main": "lib/index.js",
   "scripts": {
     "clean-logs": "rm -fr npm-debug.log.*",
