@@ -1,6 +1,6 @@
 {
   "name": "minmax-wt-alpha-beta-pruning",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -79,7 +79,8 @@
     "babel-runtime": "^6.6.1",
     "flow-bin": "^0.57.3",
     "in-publish": "^2.0.0",
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "simple-trees": "latest"
   },
   "dependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.8.0",
@@ -87,8 +88,6 @@
     "babel-register": "^6.14.0",
     "chai": "^4.1.2",
     "lodash": "^4.10.0",
-    "flow-common-types": "latest",
-    "source-map-support": "^0.4.0",
-    "simple-trees": "latest"
+    "source-map-support": "^0.4.0"
   }
 }

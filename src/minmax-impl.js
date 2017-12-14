@@ -17,10 +17,6 @@ if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-
 import _ from 'lodash';
 import {assert} from 'chai';
 
-import type {Stringifier, Predicate} from 'flow-common-types';
-
-import {Node} from 'simple-trees';
-
 import type {
     IGameRules, EvaluateFT, MinMaxFT, TMinMaxResult, TMinMaxStatistics
 } from './minmax-interface.js'

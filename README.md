@@ -15,6 +15,13 @@ npm install minmax-wt-alpha-beta-pruning
 
 # Features
 
+The main feature of this library is that it can work with **any** two-player game that a client
+programmer may define. As such, it can be thought of as an engine to which the client programmer plugs certain
+functions describing their game rules and the engine comes up with the best move. The concepts of the
+min-max algorithm do not leak out to client programmers who only concern themselves with the rules of the game.
+Well, actually the only concept that does leak is the number of plies to look ahead but this is hardly
+intrinsic to the min-max algorithm.
+
 The basic min-max algorithm is rather obvious and straightforward, any coder is capable of independently
 inventing it even if they have read nothing about it. The clever part is the performance optimization
 afforded by the *alpha-beta pruning* idea. I am not going to describe that here. Refer to online resources
@@ -23,12 +30,6 @@ article is wrong. Once you read about alpha-beta pruning it seems simple at firs
 right. This being said, despite the bug in the algorithm, the Wikipedia article does a passable job at
 explaining the intuition behind the alpha-beta pruning idea.
 
-The main feature of this library is that it can work with **any** two-player game that a client
-programmer may define. As such, it can be thought of as an engine to which the client programmer plugs certain
-functions describing their game rules and the engine comes up with the best move. The concepts of the
-min-max algorithm do not leak out to client programmers who only concern themselves with the rules of the game.
-Well, actually the only concept that does leak is the number of plies to look ahead but this is hardly
-intrinsic to the min-max algorithm.
 
 The library is statically typed using FlowType. Of course, you, as a client programmer, don't have to use FlowType.
 However, if it so happens that you are familiar with FlowType, then simply look at the following two
@@ -279,7 +280,7 @@ function minmax(gameState, gameRules, evalute, numOfPlies) {..}
 You import function *minmax* like this:
 
 ```js
-import {minmax} from 'minmax-wt-alpha-beta-pruning'
+import {minmax} from 'minmax-wt-alpha-beta-pruning';
 ```
 
 

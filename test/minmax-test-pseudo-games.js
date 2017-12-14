@@ -9,7 +9,6 @@ import           _ from 'lodash';
 assert.isOk(_);
 import {Node}            from 'simple-trees';
 assert.isOk(Node);
-import type {Exact} from 'flow-common-types';
 
 
 import type {ListMovesFT}                 from '../src/index.js';
