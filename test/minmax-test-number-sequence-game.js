@@ -29,7 +29,7 @@ type Move = 1 | 2 | 3 | 4;
 
 
 import type {IGameRules}                       from '../src/index.js';
-import type {EvaluatorFT}                      from '../src/index.js';
+import type {EvaluateFT}                      from '../src/index.js';
 import type {TMinMaxResult}                    from '../src/index.js';
 
 import      {minmax}                      from '../src/index.js';
@@ -37,7 +37,7 @@ import      {minmax}                      from '../src/index.js';
 
 const GameRules: IGameRules<number, Move> = (function(){
 
-    function brancher(gs: number): Array<Move> {
+    function listMoves(gs: number): Array<Move> {
         return [1, 2, 3, 4];
     }
 
@@ -45,48 +45,44 @@ const GameRules: IGameRules<number, Move> = (function(){
         return gs+move;
     }
 
-    function isTerminalState(gs: number): boolean {
-        return gs>=10;
+    function terminalStateEval(gs: number): ?number {
+        if (gs>=10)
+            return Number.NEGATIVE_INFINITY; // the player who just finished his move WON the game so the player who's to move next (the 'moving player') LOST
+        else
+            return null; // we are at a non-terminal state as far as the game is concerned
     }
 
     return {
-        brancher: brancher,
+        listMoves: listMoves,
         nextState: nextState,
-        isTerminalState: isTerminalState
+        terminalStateEval: terminalStateEval
     };
 })();
 
-function evaluator(gs: number): number {
-    if (gs===10)
-        return Number.NEGATIVE_INFINITY; // the player who just finished his move WON the game so the player who's to move next (the 'moving player') LOST
-    else if (gs>0)
-        return Number.POSITIVE_INFINITY; // the player who just finished his move LOST the game so the player who's to move next (the 'moving player') WON
-    else
-        return 0; // the evaluator is too stupid to figure out what to do in the other cases, so just returns an ambivalent 0
+function evaluate(gs: number): number {
+    return 0; // the evaluate is too stupid to figure out what to do in the other cases, so just returns an ambivalent 0
 }
 
-(evaluator: EvaluatorFT<number>);
+(evaluate: EvaluateFT<number>);
 
 describe('recursive minmax on number game', function() {
     describe('winning cases', function() {    
         it('case 000', function() {
-            assert.throws(function() {
-                for (let i = 10; i < 15; i++)
-                    minmax(i
-                                , GameRules
-                                , evaluator
-                                , 1
-                                , Number.NEGATIVE_INFINITY
-                                , Number.POSITIVE_INFINITY
-                               )}, 'minmax called on terminal state');
+
+            for (let i = 10; i < 15; i++) {
+                const x = minmax(i
+                                 , GameRules
+                                 , evaluate
+                                 , 1);
+                assert.isNull(x.bestMove);
+            }
         });
         it('case 001', function() {
             const x: TMinMaxResult<Move> = minmax(9
                                                        , GameRules
-                                                       , evaluator
-                                                       , 30
-                                                       , Number.NEGATIVE_INFINITY
-                                                       , Number.POSITIVE_INFINITY);
+                                                       , evaluate
+                                                  , 30
+                                                 );
             assert.strictEqual(x.bestMove  , 1);
             assert.strictEqual(x.evaluation, Number.POSITIVE_INFINITY);
         });
@@ -96,10 +92,9 @@ describe('recursive minmax on number game', function() {
                 plies.forEach(function(depth) {
                     const x: TMinMaxResult<Move> = minmax(10-i
                                                                , GameRules
-                                                               , evaluator
-                                                               , depth
-                                                               , Number.NEGATIVE_INFINITY
-                                                               , Number.POSITIVE_INFINITY);                                                               
+                                                               , evaluate
+                                                          , depth
+                                                         );
                     assert.strictEqual(x.bestMove, i);
                     assert.strictEqual(x.evaluation, Number.POSITIVE_INFINITY);                
                 });
@@ -111,10 +106,8 @@ describe('recursive minmax on number game', function() {
             counterAndBestMoves.forEach(([counter, expectedBestMove])=>{
                 const x: TMinMaxResult<Move> = minmax(counter
                                                            , GameRules
-                                                           , evaluator
+                                                           , evaluate
                                                            , 3
-                                                           , Number.NEGATIVE_INFINITY
-                                                           , Number.POSITIVE_INFINITY
                                                           );
                 assert.strictEqual(x.bestMove, expectedBestMove);
                 assert.strictEqual(x.evaluation, Number.POSITIVE_INFINITY);            
@@ -123,24 +116,23 @@ describe('recursive minmax on number game', function() {
     });
     describe('losing cases', function() {    
         it('case 000', function() {
-            assert.throws(function() {
-                for (let i = 10; i < 15; i++)
-                    minmax(i
-                                , GameRules
-                                , evaluator
-                                , 1
-                                , Number.NEGATIVE_INFINITY
-                                , Number.POSITIVE_INFINITY
-                               )}, 'minmax called on terminal state');
+
+            for (let i = 10; i < 15; i++) {
+                for (let ply = 0; i < 10; ply++) {
+                    const x = minmax(i
+                                     , GameRules
+                                     , evaluate
+                                     , ply);
+                    assert.isNull(x.bestMove);
+                }
+            }
         });
         it('case 001', function() {
             [0,5].forEach(function(i) {
                 const x: TMinMaxResult<Move> = minmax(i
                                                            , GameRules
-                                                           , evaluator
+                                                           , evaluate
                                                            , 30
-                                                           , Number.NEGATIVE_INFINITY
-                                                           , Number.POSITIVE_INFINITY                                 
                                                           );                                                           
                 assert.strictEqual(x.evaluation, Number.NEGATIVE_INFINITY);
             });

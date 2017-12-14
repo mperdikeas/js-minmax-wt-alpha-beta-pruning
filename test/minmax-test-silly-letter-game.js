@@ -20,7 +20,7 @@ assert.isOk(Node);
  *    MoveGTP         will be the type Letter
  *    GameStateGTP    will be the class GameState
  *
- *    This is such a simple game that the brancher function does not depend on whose turn it is to
+ *    This is such a simple game that the listMoves function does not depend on whose turn it is to
  *    move (there's no concept of 'pieces' belonging to any of the players), and as such, there's
  *    no need for the game state class to keep track of whose turn it is to play.
  *
@@ -30,7 +30,7 @@ type Letter = 'a' | 'b' | 'c';
 
 
 import type {IGameRules}                       from '../src/index.js';
-import type {EvaluatorFT}                      from '../src/index.js';
+import type {EvaluateFT}                      from '../src/index.js';
 import type {TMinMaxResult}                    from '../src/index.js';
 
 import      {minmax}                      from '../src/index.js';
@@ -64,8 +64,15 @@ class GameState {
         return new GameState(this.letter, newLetter, newAllLetters);
     }
 
-    isTerminalState(): boolean {
-        return (this.letter!==null) && (this.prevLetter!==null) && (this.letter===this.prevLetter);
+    terminalStateEval(): ?number {
+        if ((this.letter!==null) && (this.prevLetter!==null) && (this.letter===this.prevLetter)) {
+            const lettersMatch: boolean = (this.prevLetter===this.letter) && (this.letter!==null);
+            if (lettersMatch)
+                return Number.POSITIVE_INFINITY; // if the letters match then the player who just finished his move lost the game so the player who's to move next (the 'moving player') WON
+            else
+                return null;
+        } else
+            return null; // non-terminal state
     }
 
     constructor (prevLetter: ?Letter, letter: ?Letter, allLetters: Array<Letter>) {
@@ -93,7 +100,7 @@ function newStatistics() {
 
 const GameRules: IGameRules<GameState, Letter> = (function(){
 
-    function brancher(gs: GameState): Array<Letter> {
+    function listMoves(gs: GameState): Array<Letter> {
         return ['a', 'b', 'c'];
     }
 
@@ -101,27 +108,23 @@ const GameRules: IGameRules<GameState, Letter> = (function(){
         return gs.newState(move);
     }
 
-    function isTerminalState(gs: GameState): boolean {
-        return gs.isTerminalState();
+    function terminalStateEval(gs: GameState): ?number {
+        return gs.terminalStateEval();
     }
 
     return {
-        brancher: brancher,
+        listMoves: listMoves,
         nextState: nextState,
-        isTerminalState: isTerminalState
+        terminalStateEval: terminalStateEval
     };
 })();
 
 
-function evaluator(gs: GameState): number {
-    const lettersMatch: boolean = (gs.prevLetter===gs.letter) && (gs.letter!==null);
-    if (lettersMatch)
-        return Number.POSITIVE_INFINITY; // if the letters match then the player who just finished his move lost the game so the player who's to move next (the 'moving player') WON
-    else
-        return 0;
+function evaluate(gs: GameState): number {
+        return 0; // the game is totally undecided and balanced in all non-terminal states
 }
 
-(evaluator: EvaluatorFT<GameState>);
+(evaluate: EvaluateFT<GameState>);
 
 
 describe('minmax on letter game', function() {
@@ -131,7 +134,7 @@ describe('minmax on letter game', function() {
                 const stats = newStatistics();
                 const s: TMinMaxResult<Letter> = minmax(new GameState(null, null, [])
                                                         , GameRules
-                                                        , evaluator
+                                                        , evaluate
                                                         , 1
                                                         , Number.NEGATIVE_INFINITY
                                                         , Number.POSITIVE_INFINITY
@@ -149,7 +152,7 @@ describe('minmax on letter game', function() {
                 const stats = newStatistics();
                 const s: TMinMaxResult<Letter> = minmax(new GameState(null, null, [])
                                                         , GameRules
-                                                        , evaluator
+                                                        , evaluate
                                                         , 2
                                                         , Number.NEGATIVE_INFINITY
                                                         , Number.POSITIVE_INFINITY 
@@ -166,7 +169,7 @@ describe('minmax on letter game', function() {
                 const stats = newStatistics();                    
                 const s: TMinMaxResult<Letter> = minmax(new GameState(null, null, [])
                                                         , GameRules
-                                                        , evaluator
+                                                        , evaluate
                                                         , 3
                                                         , Number.NEGATIVE_INFINITY
                                                         , Number.POSITIVE_INFINITY
@@ -183,6 +186,70 @@ describe('minmax on letter game', function() {
         });
     });
 });
+
+
+
+
+    function foo(a: number=42): number {return a+1;}
+    type FooT= (a: number)=> number
+
+    (foo: FooT)
+
+    foo();
+
+
+
+/*
+
+    function foo(a: ?number = 42): number {
+        return a+1;
+    }
+    type FooT = (a: ?number)=> number
+
+    (foo: FooT)
+
+    foo();
+ */
+/*
+In the following function definition:
+
+     function foo(a: number = 42): number {return a+1;}
+
+ &hellip; what are the semantics of the <i>number</i> annotation?
+
+Is it saying that variable <i>a</i> will always have a value inside
+the body of the function or is it saying that client programmers should always supply a value?
+ In particular either of the below codes type-check:
+
+ <h2>way 1</h2>
+    function foo(a: number = 42): number {return a+1;}
+    type FooT= (a: number)=> number
+
+    (foo: FooT)
+
+    foo();
+
+ <h2>way 2</h2>
+    function foo(a: ?number = 42): number {
+        return a+1;
+    }
+    type FooT = (a: ?number)=> number
+
+    (foo: FooT)
+
+    foo();
+
+What is the suggested way to annotate in such a case? My preference is with way #2 
+as the client programmer only has to look at the definition of the FooT type to
+realize that the parameter is optional. This allows me to tell users of my 
+library: "simply look at the type of the function (FooT)".
+
+Whereas with way #1 
+I have to tell them "the type of the function (FooT) seems to suggest that
+an argument is required, but in fact it isn't cause, see, if you look at the
+implementation, a default value is supplied"
+
+*/
 
 /*
 import type {F}  from '../src/trees.js';

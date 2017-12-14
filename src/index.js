@@ -14,11 +14,11 @@ if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-
 
 
 import type {
-    IGameRules, EvaluatorFT, BrancherFT, MinMaxFT, TMinMaxResult
+    IGameRules, EvaluateFT, ListMovesFT, MinMaxFT, TMinMaxResult
 } from './minmax-interface.js'
 
 export type {
-    IGameRules, EvaluatorFT, BrancherFT, MinMaxFT, TMinMaxResult 
+    IGameRules, EvaluateFT, ListMovesFT, MinMaxFT, TMinMaxResult 
 };
 
 import {minmax} from './minmax-impl.js';

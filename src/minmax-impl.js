@@ -22,10 +22,15 @@ import type {Stringifier, Predicate} from 'flow-common-types';
 import {Node} from 'simple-trees';
 
 import type {
-    IGameRules, EvaluatorFT, MinMaxFT, TMinMaxResult, TMinMaxStatistics
+    IGameRules, EvaluateFT, MinMaxFT, TMinMaxResult, TMinMaxStatistics
 } from './minmax-interface.js'
 
 
+/* This class is only used internally by the algorithm (in the recursive call), so the move maybe null
+   (for a terminal state).
+   This is not the case for the externally returned value (which is of type TMinMaxResult) that always
+   supplies a non-null bestMove (function minmax should never be called on a terminal state)
+*/
 class EvaluationAndMove<MoveGTP> {
     move: ?MoveGTP
     evaluation: number;
@@ -40,10 +45,10 @@ class EvaluationAndMove<MoveGTP> {
 function minmax <GameStateGTP, MoveGTP>
     (gameState           : GameStateGTP
      , gameRules         : IGameRules<GameStateGTP, MoveGTP>
-     , evaluator         : EvaluatorFT<GameStateGTP>
+     , evaluate          : EvaluateFT<GameStateGTP>
      , plies             : number
-     , alpha             : number
-     , beta              : number     
+     , alpha             : number = Number.NEGATIVE_INFINITY
+     , beta              : number = Number.POSITIVE_INFINITY 
      , statisticsHook    : ?TMinMaxStatistics<GameStateGTP>
     )
     : TMinMaxResult<MoveGTP> {
@@ -56,15 +61,16 @@ function minmax <GameStateGTP, MoveGTP>
                               , maximizing        : boolean
                              ): EvaluationAndMove<MoveGTP> {
                                  if (statisticsHook!=null) statisticsHook.visitedNode(gameState);
-                                 if (gameRules.isTerminalState(gameState) || (pliesRemaining===0)) {
+                                 const vForTerminal: ?number = gameRules.terminalStateEval(gameState);
+                                 if ( (vForTerminal!=null) || (pliesRemaining===0)) {
                                      if (statisticsHook!=null) statisticsHook.evaluatedLeafNode(gameState);
-                                     return new EvaluationAndMove(null, evaluator(gameState)*(maximizing?1:-1));
+                                     const v2 : number = (vForTerminal!=null?vForTerminal:evaluate(gameState));
+                                     return new EvaluationAndMove(null, v2*(maximizing?1:-1));
                                  } else {
                                      // construct the children and evaluate them
-                                     const moves: Array<MoveGTP> = gameRules.brancher(gameState);
-                                     assert.isTrue(moves.length > 0); // given that this is not a terminal state we should expect at least one possible move
+                                     const moves: Array<MoveGTP> = gameRules.listMoves(gameState);
                                      const NUM_OF_MOVES: number = moves.length;
-                                     assert.isTrue(NUM_OF_MOVES>0);
+                                     assert.isTrue(NUM_OF_MOVES>0, 'weird number of moves (${NUM_OF_MOVES}) in non-terminal state');
                                      if (maximizing) {
                                          var v       : number   = Number.NEGATIVE_INFINITY;
                                          var bestMove: ?MoveGTP = null;
@@ -91,7 +97,7 @@ function minmax <GameStateGTP, MoveGTP>
                                                  break;
                                              }
                                          }
-                                         assert.isTrue((v===Number.NEGATIVE_INFINITY) || (bestMove!=null));
+                                         assert.isTrue((v===Number.NEGATIVE_INFINITY) || (bestMove!=null), 'maximizing node, v is ${v}, bestMove is: ${bestMove} - this makes no sense');
                                          return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
                                      } else {
                                          var v       : number   = Number.POSITIVE_INFINITY;
@@ -112,23 +118,27 @@ function minmax <GameStateGTP, MoveGTP>
                                                  break;
                                              }
                                          }
-                                         assert.isTrue((v===Number.POSITIVE_INFINITY) || (bestMove!=null));
+                                         assert.isTrue((v===Number.POSITIVE_INFINITY) || (bestMove!=null), 'minimizing node, v is ${v}, bestMove is: ${bestMove} - this makes no sense');
                                          return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
                                      }
                                  }
                              }
-        assert.isFalse(gameRules.isTerminalState(gameState), 'minmax called on terminal state');
-        assert.isTrue(Number.isInteger(plies) && (plies>=1), `illegal plies for minmax: ${plies}`);
-        const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who starts first is the maximizing player
-        assert.isTrue(evalAndMove.move!=null);
-
-        if (evalAndMove.move!=null)
+        const v: ?number = gameRules.terminalStateEval(gameState);
+        if (v!=null)
+            return {
+                bestMove: null,
+                evaluation: v
+            };
+        else {
+            assert.isTrue(Number.isInteger(plies) && (plies>=0), `illegal plies for minmax: ${plies}`);
+            const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who starts first is the maximizing player
+            assert.isTrue((plies===0) || (evalAndMove.move!=null), 'this is not a terminal state, plies were not 0 (they were ${plies}) and yet, no move was found, this makes no sense'); 
             return {
                 bestMove  : evalAndMove.move,
                 evaluation: evalAndMove.evaluation
             };
-        else
-            throw new Error("impossible at this point as I've already asserted that the move is not null");
+
+        }
     }
 
 (minmax: MinMaxFT<mixed, mixed>)

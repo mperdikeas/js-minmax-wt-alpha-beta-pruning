@@ -12,23 +12,23 @@ assert.isOk(Node);
 import type {Exact} from 'flow-common-types';
 
 
-import type {BrancherFT}                       from '../src/index.js';
-import type {IGameRules}                       from '../src/index.js';
-import type {EvaluatorFT}                      from '../src/index.js';
-import type {TMinMaxResult}                    from '../src/index.js';
+import type {ListMovesFT}                 from '../src/index.js';
+import type {IGameRules}                  from '../src/index.js';
+import type {EvaluateFT}                  from '../src/index.js';
+import type {TMinMaxResult}               from '../src/index.js';
 import      {minmax}                      from '../src/index.js';
 
 
 type NodeT = Node<?number, string>;
 
-function brancher(node: NodeT): Array<string> {
+function listMoves(node: NodeT): Array<string> {
     if (node.children!=null)
         return Array.from( node.children.keys() );
     else
-        throw new Error('I was provided assurances from the library that the brancher will never be called on a childless node, and yet that came to pass');
+        throw new Error('I was provided assurances from the library that the listMoves function will never be called on a childless node, and yet that came to pass');
 }
 
-(brancher: BrancherFT<NodeT, string>)
+(listMoves: ListMovesFT<NodeT, string>)
 
 function nextState(gs: NodeT, move: string): NodeT {
     if (gs.children!=null) {
@@ -40,26 +40,33 @@ function nextState(gs: NodeT, move: string): NodeT {
         throw new Error('bug #2 in my pseudo-game logic');
 }
 
-function isTerminalState(n: NodeT) {
-    return n.children===null;
+function terminalStateEval(n: NodeT): ?number {
+    if (n.children!==null)
+        return null;
+    else {
+        if (n.value!=null)
+            return n.value*( (n.depthFromRoot()%2===1)?-1:1 ); // sse-1513197068: this is deep. I'll write a more extended comment when I find the time ... (hint: it has to do with the way I construct the test trees and the way the evaluate function is supposed to work (it always evaluates from the perspective of the moving player and has no concept of maximizing and minimizing player)
+    else
+        throw new Error('bug #3 in my pseudo-game logic (or maybe the depth is not set deep enough for the test tree and I have reached a leaf node with no value');
+    }
 }
 
 
 const GameRules: IGameRules<NodeT, string> =
           {
-              brancher: brancher,
+              listMoves: listMoves,
               nextState: nextState,
-              isTerminalState: isTerminalState
+              terminalStateEval: terminalStateEval
           };
 
-function evaluator(n: NodeT): number {
+function evaluate(n: NodeT): number {
     if (n.value!=null)
-        return n.value*( (n.depthFromRoot()%2===1)?-1:1 ); // this is deep. I'll write a more extended comment when I find the time ... (hint: it has to do with the way I construct the test trees and the way the evaluator function is supposed to work (it always evaluates from the perspective of the moving player and has no concept of maximizing and minimizing player)
+        return n.value*( (n.depthFromRoot()%2===1)?-1:1 ); // see: sse-1513197068
     else
-        throw new Error('bug #3 in my pseudo-game logic (or maybe the depth is not set deep enough for the test tree and I have reached a leaf node with no value');
+        throw new Error('bug #4 in my pseudo-game logic');
 }
 
-(evaluator: EvaluatorFT<NodeT>);
+(evaluate: EvaluateFT<NodeT>);
 
 class PruneIncidentInfo {
     prunedNode: mixed;
@@ -415,13 +422,29 @@ function pseudoGameLogic7 (root, c): NodeT {
     return root;
 }
 
+// "linear" game tree to be evaluated with 0, 1, 2 and 3 plies
+function pseudoGameLogic8 (evaluations): NodeT {
+    const root = new Node(evaluations[0]);
+    const a    = new Node(evaluations[1]);
+    const b    = new Node(evaluations[2]);
+    const c    = new Node(evaluations[3]);
+    const d    = new Node();
+    const e    = new Node();
+    root.setn('a' , a);
+    a.setn('b' , b);
+    b.setn('c' , c);
+    c.setn('d' , d);
+    d.setn('d' , e);
+    return root;
+}
+
 describe('recursive minmax on various pseudo games', function() {
     it('game 1', function() {
         [3,4,10,100,1000].forEach(function(ply) {
             const stats = newStatistics();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic1()
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , Number.POSITIVE_INFINITY
@@ -438,7 +461,7 @@ describe('recursive minmax on various pseudo games', function() {
             const stats = newStatistics();            
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic2()
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , Number.POSITIVE_INFINITY
@@ -456,7 +479,7 @@ describe('recursive minmax on various pseudo games', function() {
             const NodeC = new Node();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic3(NodeC)
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , Number.POSITIVE_INFINITY
@@ -478,7 +501,7 @@ describe('recursive minmax on various pseudo games', function() {
             const c2 = new Node();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic4(a2, c, c2)
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , Number.POSITIVE_INFINITY
@@ -501,7 +524,7 @@ describe('recursive minmax on various pseudo games', function() {
             const stats = newStatistics();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic5()
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , Number.POSITIVE_INFINITY
@@ -521,7 +544,7 @@ describe('recursive minmax on various pseudo games', function() {
             const pruningIncidentFatherNode = new Node();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic6(pruningIncidentFatherNode)
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          , Number.NEGATIVE_INFINITY
                                                          , 3
@@ -540,7 +563,7 @@ describe('recursive minmax on various pseudo games', function() {
             const c    = new Node();
             const x: TMinMaxResult<string> = minmax(pseudoGameLogic7(root, c)
                                                          , GameRules
-                                                         , evaluator
+                                                         , evaluate
                                                          , ply
                                                          ,10
                                                          , 6
@@ -551,5 +574,17 @@ describe('recursive minmax on various pseudo games', function() {
             assert.isTrue(stats.getPruningIncidents()[0].equals(new PruneIncidentInfo(   c, false, 9,10, 1)));
             assert.isTrue(stats.getPruningIncidents()[1].equals(new PruneIncidentInfo(root, true , 9, 6, 2)));
         });
-    });    
+    });
+    it('game 8', function() {
+        const evaluations = [24,1,-3,32];
+        [0, 1, 2, 3].forEach(function(ply) {
+            const x: TMinMaxResult<string> = minmax(pseudoGameLogic8(evaluations)
+                                                    , GameRules
+                                                    , evaluate
+                                                    , ply);
+            if (ply>0)
+                assert.strictEqual(x.bestMove  , 'a');
+            assert.strictEqual(x.evaluation,   evaluations[ply]);
+        });
+    });        
 });

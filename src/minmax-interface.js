@@ -31,23 +31,22 @@ SomeFunctionFT : Function Type
 */
 
 
-export type BrancherFT<GameStateGTP, MoveGTP> = (GameStateGTP)=>Array<MoveGTP>
+export type ListMovesFT<GameStateGTP, MoveGTP> = (GameStateGTP)=>Array<MoveGTP>
 
 export type IGameRules<GameStateGTP, MoveGTP> = {|
-    /* The framework will *never* call the brancher on a terminal state so you don't have to handle that state.
+    /* The framework will *never* call the listMoveser on a terminal state so you don't have to handle that state.
        If you don't trust, me simply return [] on a terminal state even though you can just as well throw an
        exception in that case as execution will never reach that path.
      */
-//    brancher             (gs: GameStateGTP)               : Array<MoveGTP>;
-    brancher            : BrancherFT<GameStateGTP, MoveGTP>,
-    nextState            (gs: GameStateGTP, move: MoveGTP): GameStateGTP,
-    isTerminalState      (gs: GameStateGTP)               : boolean
+    listMoves                                          : ListMovesFT<GameStateGTP, MoveGTP>,
+    nextState         (gs: GameStateGTP, move: MoveGTP): GameStateGTP,
+    terminalStateEval (gs: GameStateGTP)               : ?number
 |}
 
 
 
 
-/* The evaluator function will ***always*** evaluate from the perspective of the moving player
+/* The evaluate function will ***always*** evaluate from the perspective of the moving player
    (we assume that information on which player is moving is embedded in the GameStateGTP)
    positive infinity means  WIN  or hugely    favourable situation for the moving player
    negative --------------- LOSS ---------- unfavourable ------------------------------
@@ -56,18 +55,18 @@ export type IGameRules<GameStateGTP, MoveGTP> = {|
    an evaluation that's neither positive nor negative infinity (e.g. if the game allows
    draws or some other graded outcome).
 
-   The evaluator function has no concept of "maximizing" or "minimizing" player. This is an artifact
-   of the minmax algorithm. The evaluator function simply reports from the perspective of the moving
+   The evaluate function has no concept of "maximizing" or "minimizing" player. This is an artifact
+   of the minmax algorithm. The evaluate function simply reports from the perspective of the moving
    player and the minmax implementation (that constructs the game tree) takes account of who the
    maximizing or minimizing player is and proceeds accordingly. I.e., it effectively multiplies the
-   return value of the evaluator function by +1 or -1 respectively.
+   return value of the evaluate function by +1 or -1 respectively.
  */
 
-export type EvaluatorFT <GameStateGTP> = (gs: GameStateGTP) => number;
+export type EvaluateFT <GameStateGTP> = (gs: GameStateGTP) => number;
 
-export type TMinMaxResult<MoveGTP> = // TODO: change that to nominal, not structural, typing
+export type TMinMaxResult<MoveGTP> =
     {|
-        bestMove  : MoveGTP,
+        bestMove  : ?MoveGTP,
         evaluation: number
     |}
 
@@ -95,11 +94,11 @@ export type TMinMaxStatistics<GameStateGTP> =
 export type MinMaxFT<GameStateGTP, MoveGTP> =
     (gameState   : GameStateGTP
      , gameRules : IGameRules<GameStateGTP, MoveGTP>
-     , evaluator: EvaluatorFT<GameStateGTP>
+     , evaluate: EvaluateFT<GameStateGTP>
      , plies: number
-     , alpha: number
-     , beta: number
-     , statisticsHook: ?TMinMaxStatistics<GameStateGTP>
+     , alpha?: number
+     , beta?:  number
+     , statisticsHook?: TMinMaxStatistics<GameStateGTP>
     ) => TMinMaxResult<MoveGTP>;
 
 
