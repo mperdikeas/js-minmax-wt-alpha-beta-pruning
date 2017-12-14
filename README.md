@@ -9,7 +9,9 @@ a client programmer.
 
 # Installation
 
+```
 npm install minmax-wt-alpha-beta-pruning
+```
 
 # Features
 
@@ -270,11 +272,15 @@ we'll describe later.
 
 For the time being, you can consider the *minmax* function to have the following signature:
 
-    function minmax(gameState, gameRules, evalute, numOfPlies) {..}
+```js
+function minmax(gameState, gameRules, evalute, numOfPlies) {..}
+```
 
 You import function *minmax* like this:
 
-    import {minmax} from 'minmax-wt-alpha-beta-pruning'
+```js
+import {minmax} from 'minmax-wt-alpha-beta-pruning'
+```
 
 
 Function *minmax* returns an object with two properties 'bestMove' and 'evaluation':
@@ -311,11 +317,14 @@ in the next arguments.
 An object that bundles together the three functions *listMoves*, *nextState*, *terminalStateEval*
 described in the "Main Concepts" section:
 
+```js
+
     {
         listMoves        : function (gameState)       {/* returns a list of moves */}
         nextState        : function (gameState, move) {/* returns a new state object */}
         terminalStateEval: function (gameState)       {/* returns a number or null */}
     }
+```
 
 These three functions fully define the rules of the game from the perspective of the engine.
 
@@ -340,7 +349,9 @@ number of plies. The alpha-beta pruning optimization will serve to reduce this w
 
 In addition to the four mandatory arguments that the *minmax* function takes:
 
-    function minmax(gameState, gameRules, evalute, numOfPlies) {..}
+```js
+function minmax(gameState, gameRules, evalute, numOfPlies) {..}
+```
 
 &hellip; there's three more optional arguments that should normally not concern a client programmer.
 These are:
