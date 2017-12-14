@@ -4,7 +4,6 @@
     # if you don't ignore *.js.flow files you get duplicate validation messages (e.g. for both a.js and a.js.flow)
     <PROJECT_ROOT>/lib/.*\.js\.flow
 [include]
-    test
 [libs]
     decls
 [options]

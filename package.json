@@ -1,6 +1,6 @@
 {
   "name": "minmax-wt-alpha-beta-pruning",
-  "version": "0.9.0",
+  "version": "0.9.5",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -54,7 +54,7 @@
     "test-watch": "npm run build && mocha --require source-map-support/register --compilers js:babel-register --watch",
     "preglobalInstallOnThisMachine": "npm run clean && npm run flow-check && npm run test",
     "globalInstallOnThisMachine": "npm install -g .",
-    "prepublish": "(in-publish && npm run clean && npm run build && npm run flow-check && npm run test && /bin/false) || not-in-publish",
+    "prepublish": "(in-publish && npm run clean && npm run build && npm run flow-check && npm run test && /bin/true) || not-in-publish",
     "prepublish.README": "to enable publishing, remove the /bin/false at the end (this serves as a publish guard)"      
   },
     "repository": {
