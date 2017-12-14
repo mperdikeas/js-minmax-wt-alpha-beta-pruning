@@ -13,6 +13,15 @@ a client programmer.
 npm install minmax-wt-alpha-beta-pruning
 ```
 
+# Entry Point
+
+The library exports a single function:
+
+```js
+import {minmax} from 'minmax-wt-alpha-beta-pruning';
+```
+
+
 # Features
 
 The main feature of this library is that it can work with **any** two-player game that a client
@@ -36,7 +45,7 @@ However, if it so happens that you are familiar with FlowType, then simply look 
 files instead of (or in addition to) reading this documentation:
 
 * *minmax-interface.js*: type definitions
-* *index.js*: exported functions and types
+* *index.js*: the single exported function (minmax) and some exported FlowType definitions
 
 
 # Main Concepts
@@ -169,7 +178,7 @@ function listMoves(gameState) {
     const returnValue = []
     // populate with at least one (1) valid move
     return returnValue;
-    }
+}
 ```    
 
 The game engine will never call *listMoves* on a terminal game state. As such, *listMoves* should always return a
