@@ -319,12 +319,11 @@ An object that bundles together the three functions *listMoves*, *nextState*, *t
 described in the "Main Concepts" section:
 
 ```js
-
-    {
-        listMoves        : function (gameState)       {/* returns a list of moves */}
-        nextState        : function (gameState, move) {/* returns a new state object */}
-        terminalStateEval: function (gameState)       {/* returns a number or null */}
-    }
+{
+    listMoves        : function (gameState)       {/* returns a list of moves */}
+    nextState        : function (gameState, move) {/* returns a new state object */}
+    terminalStateEval: function (gameState)       {/* returns a number or null */}
+}
 ```
 
 These three functions fully define the rules of the game from the perspective of the engine.
