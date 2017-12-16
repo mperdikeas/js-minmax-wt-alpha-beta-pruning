@@ -51,9 +51,9 @@ The engine imagines every game supplied to it as consisting of the following thi
 
 * some opaque data structure representing the game state
 * some opaque data structure representing a possible move
-* a function that is given a game state returns the list of possible, valid moves (under the rules of the game)
-* a function that is given a game state and a move returns a new game state
-* a function that is given a game state and detects whether the game has finished (and pronounces the winner or declares a tie or some other more nuanced outcome &mdash; e.g. in scoring games)
+* a function that is passed a game state and returns the list of possible, valid moves (under the rules of the game)
+* a function that is passed a game state and a move and returns a new game state
+* a function that is passed a game state and detects whether the game has finished (and pronounces the winner or declares a tie or some other more nuanced outcome &mdash; e.g. in scoring games)
 
 The engine makes no assumptions at all as to the data structure representing the *game state*. It is assumed
 to be an opaque object which the library does not try to access in any way. It is also assumed that this
@@ -83,7 +83,7 @@ four functions which the library internally names:
 * *evaluate*
 
 
-These four functions that the client programmer supplies are described below. These
+These
 functions have no concept of the minmax algorithm. For all the client programmer knows, they supply
 those four functions to some AI and the AI figures the best move. Which algorithm the AI uses to find
 the best move is abstracted away and the four functions supplied by the client programmer are not aware of what
@@ -93,6 +93,8 @@ programmer.
 
 Note that I use the names that the library uses internally to
 refer to those functions. You can obviously name yours however you like.
+
+The four functions that the client programmer supplies are described in the following sections.
 
 ## terminalStateEval
 
@@ -127,7 +129,7 @@ a terminal state" or "the player other than the player who just made their move"
 To provide some examples, in a game with only win/lose outcomes, suppose a player just made a move
 that won the game for him. The *terminalStateEval* function should then return negative infinity or some other very low
 value (see similar discussion in the description of the *evaluate* function) as the game was lost for the other player
-(who would normally get to move next were this not a terminal state).
+(who would normally get to move next if this were not a terminal state).
 
 Depending on the game, it is quite possible that your
 *terminalStateEval* function may return a non infinity value for a terminal state. This could be the case, e.g. if
@@ -138,7 +140,7 @@ the engine has are that:
 
 * for non-terminal states you return null
 * for terminal states you return a number with the understanding that the greater the number, the better the
-situation will be assumed to be from the perspective of the player who moves next.
+situation is assumed to be from the perspective of the player who moves next.
 
 That's all.
 
@@ -234,7 +236,7 @@ to simply denote hugely favourable or hugely unfavourable
 non-terminal states during the course of the game.
 
 You are also not required to use negative values for game states that are unfavourable
-to the moving player. Simply returning a low value in such a case is enough. In short, you have total liberty in deciding
+to the moving player. Simply returning a low value in such a case is enough. In short, you have total freedom in deciding
 what's the numerical range of your *evaluate* function. Much like you have total liberty in deciding what's the range
 of your *terminalStateEval* function. This being said, I think a good practice would be to ensure
 that *evaluate* always returns values in an interval that lies strictly within the interval defined by the lowest possible
@@ -332,7 +334,8 @@ described in the "Main Concepts" section:
 }
 ```
 
-These three functions fully define the rules of the game from the perspective of the engine.
+These three functions fully define the rules of the game from the perspective of the engine and are
+described in the "Main Concepts" section. 
 
 ### evaluate
 
@@ -388,8 +391,9 @@ function in a way that places stronger moves, as much as possible, towards the b
 
 Note that
 returning the list of moves
-from *listMoves* in the suggested order (stronger moves first) is **not** necessary for pruning to occur. Pruning
-will happen even if you return the moves in no particular order. It is simply that by returning the moves
+from *listMoves* in the suggested order (stronger moves first) is **not** necessary for alpha-beta pruning to occur.
+Alpha-beta pruning
+will very likely happen even if you return the moves in no particular order. It is simply that by returning the moves
 in this manner, that more pruning is likely to occur (the more nodes / sub-trees are pruned, the better the
 space requirements and the running time of the algorithm).
 
@@ -420,6 +424,9 @@ export type MinMaxFT<GameStateGTP, MoveGTP> =
 You can see from the above type definition that function *minmax* uses generic type parameters (that's what
 *GTP* stands for) and is agnostic as to the actual structures the client programmer uses to represent
 game state or game moves.
+
+All types defined in *minmax-interface.js* are imported and re-exported from the *index.js* file which defines
+the public interface for client programmers.
 
 
 
