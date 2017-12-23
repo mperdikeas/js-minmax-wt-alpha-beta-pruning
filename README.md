@@ -10,6 +10,15 @@ a **generic** minmax engine with alpha-beta pruning that can work with **any** g
 npm install minmax-wt-alpha-beta-pruning
 ```
 
+# Github repo
+
+If you clone the github repo for experimentation, run *make* first. Look at the top-level <tt>Makefile</tt>
+which installs the dependencies, builds and runs Flow (for static type checking) and runs the tests (Mocha).
+
+For quick examples on how to use the library look at the <tt>test</tt> directory and in particular the files
+<tt>minmax-test-silly-letter-game.js</tt> and <tt>minmax-test-number-sequence-game.js</tt> which implement two
+very simple games.
+
 # Entry Point
 
 The library exports a single function:
