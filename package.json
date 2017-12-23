@@ -1,6 +1,6 @@
 {
   "name": "minmax-wt-alpha-beta-pruning",
-  "version": "0.9.13",
+  "version": "0.9.18",
   "description": "A generic minmax algorithm engine (with alpha-beta pruning) that can work with any game supplied by the user",
   "main": "lib/index.js",
   "scripts": {
@@ -34,12 +34,13 @@
       "our Mocha tests validate the compiled implementations in [lib/], not those in [src/]. In the latter case       ",
       "things would have presumably been simpler.                                                                     "
     ],
-    "build-watch.README.ENOSPC": ["If the above command gives you 'Error: watch src/lib.js ENOSPC', you have to do the following:",
-                                  "$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p",
-                                  "... as suggested in the below links:",
-                                  "http://stackoverflow.com/a/32600959/274677",
-                                  "https://github.com/remy/nodemon/issues/214"
-                                 ],
+    "build-watch.README.ENOSPC": [
+      "If the above command gives you 'Error: watch src/lib.js ENOSPC', you have to do the following:",
+      "$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p",
+      "... as suggested in the below links:",
+      "http://stackoverflow.com/a/32600959/274677",
+      "https://github.com/remy/nodemon/issues/214"
+    ],
     "start": "npm run build && node lib/index.js",
     "flow-check": "flow check",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
@@ -50,14 +51,14 @@
       "In this connection also see: build-watch.README.NOT-PLAYING-NICELY-with-FLOW.README         "
     ],
     "flow-stop": "flow stop",
-    "test": "npm run build && mocha --require source-map-support/register --compilers js:babel-register",
+    "test": "mocha --require source-map-support/register --compilers js:babel-register",
     "test-watch": "npm run build && mocha --require source-map-support/register --compilers js:babel-register --watch",
     "preglobalInstallOnThisMachine": "npm run clean && npm run flow-check && npm run test",
     "globalInstallOnThisMachine": "npm install -g .",
     "prepublish": "(in-publish && npm run clean && npm run build && npm run flow-check && npm run test && /bin/true) || not-in-publish",
-    "prepublish.README": "to enable publishing, remove the /bin/false at the end (this serves as a publish guard)"      
+    "prepublish.README": "to enable publishing, remove the /bin/false at the end (this serves as a publish guard)"
   },
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/mperdikeas/js-minmax-wt-alpha-beta-pruning.git"
   },
@@ -66,7 +67,9 @@
   },
   "homepage": "https://github.com/mperdikeas/js-minmax-wt-alpha-beta-pruning#readme",
   "keywords": [
-      "minmax", "min-max", "alpha beta pruning"
+    "minmax",
+    "min-max",
+    "alpha beta pruning"
   ],
   "author": "",
   "license": "ISC",

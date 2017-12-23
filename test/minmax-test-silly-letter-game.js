@@ -29,11 +29,11 @@ assert.isOk(Node);
 type Letter = 'a' | 'b' | 'c';
 
 
-import type {IGameRules}                  from '../src/index.js';
-import type {EvaluateFT}                  from '../src/index.js';
-import type {TMinMaxResult}               from '../src/index.js';
-import      {minmax}                      from '../src/index.js';
-import type {TMinMaxStatistics}           from '../src/minmax-interface.js';
+import type {IGameRules}                  from '../lib/index.js';
+import type {EvaluateFT}                  from '../lib/index.js';
+import type {TMinMaxResult}               from '../lib/index.js';
+import      {minmax}                      from '../lib/index.js';
+import type {TMinMaxStatistics}           from '../lib/minmax-interface.js';
 
 
 

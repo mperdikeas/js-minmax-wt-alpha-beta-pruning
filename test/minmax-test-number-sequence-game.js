@@ -17,7 +17,7 @@ assert.isOk(Node);
  *    The player who first reaches 10 wins the game.   
  *    If a player is stupid enough to exceed 10 he loses the game.
  *
- *    MoveGTP         will be the type Move
+ *    MoveGTP         will be the type Move defined below
  *    GameStateGTP    is simply 'number'
  * 
  *
@@ -28,10 +28,10 @@ type Move = 1 | 2 | 3 | 4;
 
 
 
-import type {IGameRules}                  from '../src/index.js';
-import type {EvaluateFT}                  from '../src/index.js';
-import type {TMinMaxResult}               from '../src/index.js';
-import      {minmax}                      from '../src/index.js';
+import type {IGameRules}                  from '../lib/index.js';
+import type {EvaluateFT}                  from '../lib/index.js';
+import type {TMinMaxResult}               from '../lib/index.js';
+import      {minmax}                      from '../lib/index.js';
 
 
 const GameRules: IGameRules<number, Move> = (function(){
