@@ -2,3 +2,5 @@ src/
 .babelrc
 .flowconfig
 Makefile
+PROVENANCE
+decls.samples/
