@@ -22,11 +22,7 @@ import type {
 } from './minmax-interface.js'
 
 
-/* This class is only used internally by the algorithm (in the recursive call), so the move maybe null
-   (for a terminal state).
-   This is not the case for the externally returned value (which is of type TMinMaxResult) that always
-   supplies a non-null bestMove (function minmax should never be called on a terminal state)
-*/
+// This class is only used internally by the algorithm (in the recursive call)
 class EvaluationAndMove<MoveGTP> {
     move: ?MoveGTP
     evaluation: number;
@@ -67,6 +63,7 @@ function minmax <GameStateGTP, MoveGTP>
                                      const moves: Array<MoveGTP> = gameRules.listMoves(gameState);
                                      const NUM_OF_MOVES: number = moves.length;
                                      assert.isTrue(NUM_OF_MOVES>0, 'weird number of moves (${NUM_OF_MOVES}) in non-terminal state');
+                                     // one can add cleverness and squeeze the two branches into one at the expense of readability 
                                      if (maximizing) {
                                          var v       : number   = Number.NEGATIVE_INFINITY;
                                          var bestMove: ?MoveGTP = null;
@@ -127,7 +124,7 @@ function minmax <GameStateGTP, MoveGTP>
             };
         else {
             assert.isTrue(Number.isInteger(plies) && (plies>=0), `illegal plies for minmax: ${plies}`);
-            const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who starts first is the maximizing player
+            const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who is to make the move is the maximizing player
             assert.isTrue((plies===0) || (evalAndMove.move!=null), 'this is not a terminal state, plies were not 0 (they were ${plies}) and yet, no move was found, this makes no sense'); 
             return {
                 bestMove  : evalAndMove.move,
