@@ -223,7 +223,7 @@ function nextState(gameState, moveToMake) {
 This is the most challenging function that the client programmer has to provide.
 
 This function accepts an object representing the game state and returns a number that expresses how good the
-position is **from the perspective of the moving player**, i.e. from the perspective of the player who gets to make a move
+position is **from the perspective of the moving player**, i.e. from the perspective of the player who moves next
 (not from the perspective of the player who just finished moving). The greater the returned value, the better
 the position is understood to be from the perspective of the moving player. Recall that the exact same
 contract applies to the *terminalStateEval* function. The engine will never call *evaluate* on a terminal game
@@ -340,7 +340,7 @@ It is always non-null.
 For most use cases you don't care about the *evaluation* returned and are just interested in the best move to make.
 
 Note that the library treats the *game state* and  *move* objects opaquely: it does not access them, nor does
-it now know to create them. The library obtains *move* objects by invoking the
+it directly construct them. The library obtains *move* objects by invoking the
 *listMoves* function supplied by the client programmer. Similarly, it obtains additional "game state" objects by invoking
 the *nextState* function (also supplied by the client programmer).
 
