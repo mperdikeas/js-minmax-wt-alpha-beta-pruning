@@ -28,6 +28,7 @@ SomeFunctionFT : Function Type
 
 
 export type ListMovesFT<GameStateGTP, MoveGTP> = (GameStateGTP)=>Array<MoveGTP>
+export type NextStateFT<GameStateGTP, MoveGTP> = (GameStateGTP, MoveGTP)=>GameStateGTP
 
 export type IGameRules<GameStateGTP, MoveGTP> = {|
     /* The framework will *never* call the listMoveser on a terminal state so you don't have to handle that state.
@@ -35,7 +36,7 @@ export type IGameRules<GameStateGTP, MoveGTP> = {|
        exception in that case as execution will never reach that path.
      */
     listMoves                                          : ListMovesFT<GameStateGTP, MoveGTP>,
-    nextState         (gs: GameStateGTP, move: MoveGTP): GameStateGTP,
+    nextState                                          : NextStateFT<GameStateGTP, MoveGTP>,
     terminalStateEval (gs: GameStateGTP)               : ?number
 |}
 
