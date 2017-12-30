@@ -3,6 +3,8 @@
 A JavaScript library implementing
 a **generic** minmax engine with alpha-beta pruning that can work with **any** game supplied by a client programmer.
 
+Sections: [Installation](#installation), [Githu repo](#github-repo), [Entry Point](#entry-point), [Features](#features), [Main Concepts](#main-concepts), [How to use](#how-to-use) and [Implementation details](#implementation-details).
+
 
 # Installation
 
@@ -15,9 +17,12 @@ npm install minmax-wt-alpha-beta-pruning
 If you clone the github repo for experimentation, run *make* first. Look at the top-level <tt>Makefile</tt>
 which installs the dependencies, builds and runs Flow (for static type checking) and runs the tests (Mocha).
 
-For quick examples on how to use the library look at the <tt>test</tt> directory and in particular the files
-<tt>minmax-test-silly-letter-game.js</tt> and <tt>minmax-test-number-sequence-game.js</tt> which implement two
-very simple games.
+For quick examples on how to use the library look at the *test/* directory and in particular the files:
+
+* *minmax-test-silly-letter-game.js* and
+* *minmax-test-number-sequence-game.js*
+
+&hellip; which implement two trivial games.
 
 # Entry Point
 
@@ -30,12 +35,16 @@ import {minmax} from 'minmax-wt-alpha-beta-pruning';
 
 # Features
 
-The main feature of this library is that it can work with **any** two-player game that a client
-programmer may define. As such, it can be thought of as an engine to which the client programmer plugs certain
-functions describing their game rules and the engine comes up with the best move. The concepts of the
+This library implements a general-purpose minmax algorithm (with alpha-beta pruning).
+It can work with **any** zero-sum two-player game that a client
+programmer may define.
+The client programmer is expected to plug a number of functions to the library and the engine comes up with the best move.
+The functions supplied by the client programmer describe the game rules
+and provide some hints of "strategy".
+The concepts of the
 min-max algorithm do not leak out to client programmers who only concern themselves with the rules of the game.
 Well, actually the only concept that does leak is the number of plies to look ahead but this is hardly
-intrinsic to the min-max algorithm.
+intrinsic to the min-max algorithm. In what follows I am using the terms "library" / "engine" interchangeably.
 
 The basic min-max algorithm is rather obvious and straightforward, any coder is capable of independently
 inventing it even if they have read nothing about it. The clever part is the performance optimization
@@ -80,30 +89,26 @@ are, as explained:
 * game states
 * moves
 
-&hellip; and they are both treated opaquely by the library. I.e. the library does not expect them to
-have any particular fields to access or methods to call. It simply accepts them and passes them around.
+&hellip; and they are both treated opaquely by the library. I.e. the library does not create them or access them: it simply accepts them and passes them around.
 
-To invoke the engine, i.e. to call the *minmax* function, the client programmer has to supply 
-four functions which the library internally names:
+To invoke the engine, i.e. to call the *minmax* function, the client programmer has to supply four functions that describe the rules of the game and encode some rudimentary strategy or "cleverness" for the engine to use.
 
-* *terminalStateEval*
-* *listMoves*
-* *nextState*
-* *evaluate*
+The four functions provided by the client programmer have no concept of the minmax algorithm.
+The client programmer does not need to have any understanding
+of the minmax algorithm. In particular, the concept of a maximizing player and a minimizing player is kept
+internal to the library and is not leaked to the client programmer.
+This being said, some familiarity with the algorithm is helpful in order to have some mental model of how the
+engine uses these functions, how they work together and also to appreciate the performance implications of
+increasing the search depth ("number of plies" &mdash; explained later).
+
+The four functions that the client programmer supplies are described in the subsections that follow:
+
+* [terminalStateEval](#terminalstateeval)
+* [listMoves](#listmoves)
+* [nextState](#nextstate)
+* [evaluate](#evaluate)
 
 
-These
-functions have no concept of the minmax algorithm. For all the client programmer knows, they supply
-those four functions to some AI and the AI figures the best move. Which algorithm the AI uses to find
-the best move is abstracted away and the four functions supplied by the client programmer are not aware of what
-algorithm operates on them nor do they need to be aware of any of the concepts of the minmax algorithm. In particular,
-the concept of a maximizing player and a minimizing player is kept internal in the library and is not leaked to the client
-programmer.
-
-Note that I use the names that the library uses internally to
-refer to those functions. You can obviously name yours however you like.
-
-The four functions that the client programmer supplies are described in the following sections.
 
 ## terminalStateEval
 
@@ -126,7 +131,7 @@ function terminalStateEval(gameState) {
 }
 ```    
 
-Pay extra attention to the following point:
+PAY EXTRA ATTENTION TO THE FOLLOWING POINT:
 
 The game engine expects the *terminalStateEval* function to always report the outcome, **from the perspective
 of the player who is to move next**. Obviously, once the game has reached a terminal state there's going to be no
@@ -135,8 +140,8 @@ we say "the player who moves next".
 If this wording bothers you, think of it as "the player who would normally move next if this were not
 a terminal state" or "the player other than the player who just made their move".
 
-To provide some examples, in a game with only win/lose outcomes, suppose a player just made a move
-that won the game for him. The *terminalStateEval* function should then return negative infinity or some other very low
+To provide an example, in a game with only win/lose outcomes, suppose a player just made a move
+that won the game for them. The *terminalStateEval* function should then return negative infinity or some other very low
 value (see similar discussion in the description of the *evaluate* function) as the game was lost for the other player
 (who would normally get to move next if this were not a terminal state).
 
@@ -149,7 +154,8 @@ the engine has are that:
 
 * for non-terminal states you return null
 * for terminal states you return a number with the understanding that the greater the number, the better the
-situation is assumed to be from the perspective of the player who moves next.
+situation is assumed to be from the perspective the player who would normally get to make the next move (if this
+were not a terminal state).
 
 That's all.
 
@@ -160,14 +166,12 @@ of (except Go), it is very easy to determine if the game has ended and who's the
 Clever heuristics
 and AI stuff belong in the *evaluate* function, not in *terminalStateEval*.
 
-Finally, if you already know a bit or two about the min-max algorithm, you will know that it has the
-concept of "leaf nodes".
+As a last note, if you already know a bit or two about the min-max algorithm, you may have come across
+the concept of "leaf nodes".
 *Leaf nodes* are game states in the game tree in which either the game has ended or analysis cannot proceed
 any further due to the fact that the maximum analysis depth has been reached. You may then be wondering
 how *terminalStateEval* relates to the concept of *leaf nodes* in the minmax algorithm. The answer is that
-it is unrelated.
-
-Do not be confused by the minmax implementation-specific concept of "leaf nodes"! The
+it is unrelated. Do not be confused by the minmax implementation-specific concept of "leaf nodes". The
 *terminalStateEval* is simply required to report whether the game has ended **under the rules
 of the game**, not whether this game state is a *leaf node* in the game tree created by the minmax algorithm (to which
 it has no visibility to begin with). Obviously a terminal game state will always be a leaf in the game tree
@@ -190,8 +194,9 @@ function listMoves(gameState) {
 ```    
 
 The game engine will never call *listMoves* on a terminal game state. As such, *listMoves* should always return a
-non-empty list of valid moves (the engine actually makes that assertion internally) as if there are
-no valid moves, then we are by definition on a terminal game state.
+non-empty list of valid moves (the engine actually makes that assertion internally). If there are
+no valid moves to make, then we are by definition on a terminal game state and we have the guarantee that *listMoves*
+is never called on such a state.
 
 
 ## nextState
@@ -201,8 +206,7 @@ This function should accept two arguments:
 * an object representing the state of the game
 * an object representing a (valid) move
 
-&hellip; and should return a new game state object corresponding to the state of the game if the move passed as argument is
-indeed made. That's all. The previous game state object should not be mutated.
+&hellip; and should return the new state of the game after the move is made. That's all. The previous game state object should not be mutated.
 
 So it should look like this:
 
@@ -219,7 +223,7 @@ function nextState(gameState, moveToMake) {
 This is the most challenging function that the client programmer has to provide.
 
 This function accepts an object representing the game state and returns a number that expresses how good the
-position is **from the perspective of the moving player**, i.e. from the perspective of the player who moves next
+position is **from the perspective of the moving player**, i.e. from the perspective of the player who gets to make a move
 (not from the perspective of the player who just finished moving). The greater the returned value, the better
 the position is understood to be from the perspective of the moving player. Recall that the exact same
 contract applies to the *terminalStateEval* function. The engine will never call *evaluate* on a terminal game
@@ -236,19 +240,20 @@ function evaluate(gameState) {
 ```
 
 
-The engine is using *terminalStateEval* to realize if the game has ended, it is not
-going to automatically assume that an evaluation of positive of negative infinity necessarily translates to a terminal
+The engine is using *terminalStateEval*, not *evaluate*, to realize if the game has ended. Therefore the
+library will not automatically assume that a call to *evaluate* that returns positive of negative infinity necessarily translates to a terminal
 state.
 
-This means that you are free to use positive or negative infinities
+This means that you are free to use positive or negative infinities as valid return values of *evaluate*
 to simply denote hugely favourable or hugely unfavourable
-non-terminal states during the course of the game.
+non-terminal states during the course of the game. In other words, as long as *terminalStateEval* returns *null*, then
+the state is understood to be non-terminal, regardless of the return value of *evaluate*.
 
-You are also not required to use negative values for game states that are unfavourable
+Also, you are not required to use negative values for game states that are unfavourable
 to the moving player. Simply returning a low value in such a case is enough. In short, you have total freedom in deciding
 what's the numerical range of your *evaluate* function. Much like you have total liberty in deciding what's the range
-of your *terminalStateEval* function. This being said, I think a good practice would be to ensure
-that *evaluate* always returns values in an interval that lies strictly within the interval defined by the lowest possible
+of your *terminalStateEval* function. This being said, I think a reasonable approach would be that
+*evaluate* always returns values in an interval that lies strictly within the interval defined by the lowest possible
 and the highest possible value that *terminalStateEval* may return.
 
 By having the contract that *evaluate* and *terminalStateEval* always evaluate from 
@@ -258,15 +263,31 @@ By having the contract that *evaluate* and *terminalStateEval* always evaluate f
  or the *terminalStateEval* functions is a *gameState* object, you should structure game state objects in such a way
  that they encode the information of which player moves next.
 
+The reason the engine accepts two functions that deal with evaluation is that these two functions serve different purposes
+and should have different execution profiles:
+
+* *terminalStateEval* is used to establish if a game state is terminal or not, and (if it's terminal) the score of the game
+* *evaluate* is used to evaluate a non-terminal game state.
+
+There's nothing subjective or AI-ish about *terminalStateEval*, hence it should be very fast and be considered part of the rules
+of the game.
+In contrast, *evaluate* is where heuristics, subjective evaluation of positions and AI-ish stuff come into play. You would want to make
+*evaluate* reasonably smart but not too heavy as it is better to have a more lightweight *evaluate* function and be able to descend into
+a higher ply depth (ply is described in the next section), than to have an exahustive but slow *evaluate* that will lead you to reduce the ply depth (so as to keep the total *minmax*
+running time reasonable).
+
+
+<!---
 The beauty of this solution is that the client programmer doesn't need to know about "minimizing" and "maximizing"
 players and that the engine library does not expose in the API, is not passed, and does not have to handle
 any objects or conventions for representing or encoding "sides" or "players". As already explained, the only objects
 passed to or handled by the library are *game state* and *move* objects &mdash; and these are treated opaquely.
+--->
 
-Before we move onto the next section that shows how to actually use the library, observe that of the four functions
+Before we move onto the next section that shows how to actually use the library, observe again that of the four functions
 supplied by the client programmer, three correspond to the rules of the game (*terminalStateEval*, *listMoves*
-and *nextState*) and one (*evaluate*) is more or less subjective. I am pointing out this distinction because
-it is reflected in the API which is described in the next section.
+and *nextState*) and one (*evaluate*) is more or less subjective. I am pointing out this distinction yet again because
+it is reflected in the API which is described next.
 
 
 # How to use
@@ -276,14 +297,15 @@ arguments:
 
 * the present state of the game
 * a *game rules* object that bundles together the *terminalStateEval*, *listMoves* and *nextState* functions
-discussed in the previous section
-* the *evaluate* function
+discussed in the [Main Concepts](#main-concepts) section
+* the *evaluate* function (also discussed in the [Main Concepts](#main-concepts) section)
 * the number of plies to look ahead
 
-The *game rules* object collects the three functions that fully describe the game from the perspective of the
-library. For any particular game, e.g. for the game of Chess, you only have to write the three *game rules* functions
-once and then you forget about them, but you may have multiple *evaluate* functions with different degrees of
-sophistication or running time requirements.
+The *game rules* object collects the three functions that fully describe the **rules** of the game from the
+perspective of the library. For any particular game, e.g. for the game of Chess, you only have to write the
+three *game rules* functions once, but you may have multiple *evaluate* functions with different degrees of
+sophistication or running time requirements. In other words, function *evaluate* supplies the "strategy"
+or the "cleverness".
 
 After the mandatory arguments, come three optional arguments which you're unlikely to need and which
 we'll describe later.
@@ -317,8 +339,8 @@ It is always non-null.
 
 For most use cases you don't care about the *evaluation* returned and are just interested in the best move to make.
 
-Note that the library treats the *move* objects opaquely: it does not access them, nor does it now know to create
-them (same thing applies to the *game state* objects). The library obtains *move* objects by invoking the
+Note that the library treats the *game state* and  *move* objects opaquely: it does not access them, nor does
+it now know to create them. The library obtains *move* objects by invoking the
 *listMoves* function supplied by the client programmer. Similarly, it obtains additional "game state" objects by invoking
 the *nextState* function (also supplied by the client programmer).
 
@@ -327,13 +349,13 @@ The four arguments needed in every invocation of the *minmax* function are descr
 
 ### gameState
 
-An opaque object which the library doesn't access but simply passes (internally) as argument to the functions supplied
+An opaque object which the library doesn't access but simply passes to the functions supplied
 in the next arguments.
 
 ### gameRules
 
 An object that bundles together the three functions *listMoves*, *nextState*, *terminalStateEval*
-described in the "Main Concepts" section:
+described in the [Main Concepts](#main-concepts) section:
 
 ```js
 {
@@ -343,12 +365,12 @@ described in the "Main Concepts" section:
 }
 ```
 
-These three functions fully define the rules of the game from the perspective of the engine and are
-described in the "Main Concepts" section. 
+These three functions fully define the rules of the game from the perspective of the engine.
+
 
 ### evaluate
 
-This is simply the *evaluate* function described in the "Main Concepts" section.
+This is simply the *evaluate* function described in the [Main Concepts](#main-concepts) section. This function supplies the "strategy" of the game.
 
 ### numOfPlies
 
@@ -357,7 +379,7 @@ game tree constructed by the algorithm. A ply is a move by a single player.
 The term 'ply' is used for clarity, since different games define 'turn' and 'move' quite differently. E.g. a move in
 Chess consists of each player taking a turn, i.e. a move in Chess consists of two plies. The *numOfPlies* argument
 must be an integer greater than or equal to 0. Calling the *minmax* function with a *ply* argument of 0
-essentially results in the engine evaluating the game state without trying to find the best move.
+essentially results in the engine simply evaluating the game state without trying to find the best move.
 
 Depending on the branching factor of the game, the worst case
 size of the game tree that the algorithm will need to evaluate is the average branching number raised to the
@@ -374,9 +396,9 @@ function minmax(gameState, gameRules, evalute, numOfPlies) {..}
 &hellip; there's three more optional arguments that should normally not concern a client programmer.
 These are:
 
-* alpha
-* beta
-* statisticsHook
+* *alpha*
+* *beta*
+* *statisticsHook*
 
 I am not going to explain what *alpha* and *beta* are. Refer to some textbook. There is no reason why you
 might consider passing arguments other than the default for these two parameters (negative and positive
@@ -392,7 +414,7 @@ think it's of any utility to the client programmers.
 # Implementation details
 
 There is a common further optimization in alpha-beta pruning which is to arrange the children nodes in the
-game tree in such a way as to maximize the possibility of pruning. 
+game tree in such a way so as to maximize the possibility of pruning. 
 
 For the client programmer to activate
 this kind of optimization they only thing they have to do is to return the list of valid moves in the *listMoves*
@@ -403,7 +425,7 @@ returning the list of moves
 from *listMoves* in the suggested order (stronger moves first) is **not** necessary for alpha-beta pruning to occur.
 Alpha-beta pruning
 will very likely happen even if you return the moves in no particular order. It is simply that by returning the moves
-in this manner, that more pruning is likely to occur (the more nodes / sub-trees are pruned, the better the
+in this manner, you maximize the number of pruning incidents that are likely to occur (the more nodes / sub-trees are pruned, the better the
 space requirements and the running time of the algorithm).
 
 An obvious caveat is that there is a trade-off involved in this, and so the client programmer wouldn't
@@ -414,7 +436,7 @@ The library uses FlowType for static type checking and type-checks with no error
 It is not a requirement for the client programmer to use FlowType but if they do, then they are able to
 import a number of exported types or look at the type definitions in file *minmax-interface.js*.
 These type definitions communicate clearly
-the API of the library and can be consulted in lieu or alongside this documentation.
+the API of the library and can be consulted in lieu of or alongside this documentation.
 
 E.g. the type of the *minmax* function is defined in *minmax-interface.js* thus:
 
@@ -431,11 +453,11 @@ export type MinMaxFT<GameStateGTP, MoveGTP> =
 ```
 
 You can see from the above type definition that function *minmax* uses generic type parameters (that's what
-*GTP* stands for) and is agnostic as to the actual structures the client programmer uses to represent
+"*GTP*" stands for) and is agnostic as to the actual structures the client programmer uses to represent
 game state or game moves.
 
-All types defined in *minmax-interface.js* are imported and re-exported from the *index.js* file which defines
-the public interface for client programmers.
+All types defined in *minmax-interface.js* that are likely to be found useful by client programmers are
+imported and re-exported from the *index.js* file which defines the public interface.
 
 
 
