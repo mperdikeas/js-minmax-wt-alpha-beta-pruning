@@ -4,3 +4,4 @@ src/
 Makefile
 PROVENANCE
 decls.samples/
+test/
