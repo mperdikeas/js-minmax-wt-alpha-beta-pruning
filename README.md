@@ -36,7 +36,7 @@ import {minmax} from 'minmax-wt-alpha-beta-pruning';
 # Features
 
 This library implements a general-purpose minmax algorithm (with alpha-beta pruning).
-It can work with **any** zero-sum two-player game that a client
+It can work with **any** two-player game that a client
 programmer may define.
 The client programmer is expected to plug a number of functions to the library and the engine comes up with the best move.
 The functions supplied by the client programmer describe the game rules
@@ -52,7 +52,8 @@ afforded by the *alpha-beta pruning* idea. I am not going to describe that here.
 or some textbook. But note that, at the time of this writing, the algorithm as presented in the eponymous Wikipedia
 article is wrong. Once you read about alpha-beta pruning it seems simple at first but it's tricky to get it
 right. This being said, despite the bug in the algorithm, the Wikipedia article does a passable job at
-explaining the intuition behind the alpha-beta pruning idea.
+explaining the intuition behind the alpha-beta pruning idea. A clearer explanation is given in <a href='https://www.cs.cornell.edu/courses/cs312/2002sp/lectures/rec21.htm'>this Cornell course note</a>.
+
 
 
 The library is statically typed using FlowType. Of course, you, as a client programmer, don't have to use FlowType.
