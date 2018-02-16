@@ -1,3 +1,6 @@
+[comment1]: <> (to generate HTML out of this file use:       )
+[comment2]: <> ($pandoc README.md -s -o foo.html             )
+
 # minmax-wt-alpha-beta-pruning
 
 A JavaScript library implementing
@@ -70,12 +73,12 @@ The engine imagines every game supplied to it as consisting of the following thi
 
 * some opaque data structure representing the game state
 * some opaque data structure representing a possible move
-* a function that is passed a game state and returns the list of possible, valid moves (under the rules of the game)
-* a function that is passed a game state and a move and returns a new game state
-* a function that is passed a game state and detects whether the game has finished (and pronounces the winner or declares a tie or some other more nuanced outcome &mdash; e.g. in scoring games)
+* a function that accepts a single argument: an object representing the state of the game and returns the list of moves that are possible at that game state (accoding to the rules of the game)
+* a function that accepts two arguments: (a) a game state object, and (b) a move object, and returns a new game state (representing the new state of the game once the move is made)
+* a function that accepts a single argument: an object representing the state of the game and returns a value that indicates whether the game has finished (and pronounces the winner or declares a tie or some other more nuanced outcome &mdash; e.g. in scoring games)
 
 The engine makes no assumptions at all as to the data structure representing the *game state*. It is assumed
-to be an opaque object which the library does not try to access in any way. It is also assumed that this
+to be an opaque object whose properties the library does not try to access in any way. It is also assumed that this
 object encodes which player is to move next (this is, after all, part of the game state so it should
 come as no surprise). How the game state object, implicitly or explicitly, encodes which player is to move
 next is up to the client programmer.
@@ -83,7 +86,7 @@ next is up to the client programmer.
 Similarly, the engine makes no assumptions as to the data structure representing *moves* in the game.
 Again, it is treated as an opaque object that the library simply passes around.
 
-Finally the engine is totally ignorant of whatever data structure the client programmer uses to represent
+Finally, the engine is totally ignorant of whatever data structure the client programmer uses to represent
 the two players or the two "sides" and is not even dealing with such objects. The only objects it deals with
 are, as explained:
 
@@ -92,7 +95,10 @@ are, as explained:
 
 &hellip; and they are both treated opaquely by the library. I.e. the library does not create them or access them: it simply accepts them and passes them around.
 
-To invoke the engine, i.e. to call the *minmax* function, the client programmer has to supply four functions that describe the rules of the game and encode some rudimentary strategy or "cleverness" for the engine to use.
+To invoke the engine, i.e. to call the *minmax* function, the client programmer has to supply four functions:
+
+* Three of these functions describe the rules of the game.
+* The fourth function provides some strategy or "cleverness" for the engine to use. How simple or nuanced this fourth function will be, is up to the client programmer.
 
 The four functions provided by the client programmer have no concept of the minmax algorithm.
 The client programmer does not need to have any understanding
