@@ -463,8 +463,9 @@ You can see from the above type definition that function *minmax* uses generic t
 "*GTP*" stands for) and is agnostic as to the actual structures the client programmer uses to represent
 game state or game moves.
 
-All types defined in *minmax-interface.js* that are likely to be found useful by client programmers are
-imported and re-exported from the *index.js* file which defines the public interface.
+All FlowTypes types defined in *minmax-interface.js* that are likely to be found useful by client programmers are
+imported and re-exported from the *index.js* file which defines the public interface. Obviously, this only
+concerns client programmers who wish to use FlowType for static type checking. 
 
 
 
