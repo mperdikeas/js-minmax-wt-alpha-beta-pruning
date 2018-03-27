@@ -4,8 +4,10 @@
 // The rationale behind using this idiom is described in:
 //     http://stackoverflow.com/a/36628148/274677
 //
-if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-loader/issues/121
-    require('babel-polyfill');
+    /* not needed in this project:
+     if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-loader/issues/121
+         require('babel-polyfill');
+    */
 // The above is important as Babel only transforms syntax (e.g. arrow functions)
 // so you need this in order to support new globals or (in my experience) well-known Symbols, e.g. the following:
 //
@@ -13,9 +15,6 @@ if (!global._babelPolyfill) // https://github.com/s-panferov/awesome-typescript-
 //
 // ... will print 'undefined' without the the babel-polyfill being required.
 
-
-import _ from 'lodash';
-import {assert} from 'chai';
 
 import type {
     IGameRules, EvaluateFT, MinMaxFT, TMinMaxResult, TMinMaxStatistics
@@ -62,7 +61,8 @@ function minmax <GameStateGTP, MoveGTP>
                                      // construct the children and evaluate them
                                      const moves: Array<MoveGTP> = gameRules.listMoves(gameState);
                                      const NUM_OF_MOVES: number = moves.length;
-                                     assert.isTrue(NUM_OF_MOVES>0, 'weird number of moves (${NUM_OF_MOVES}) in non-terminal state');
+                                     if (NUM_OF_MOVES<=0)
+                                         throw `weird number of moves (${NUM_OF_MOVES}) in non-terminal state`
                                      // one can add cleverness and squeeze the two branches into one at the expense of readability 
                                      if (maximizing) {
                                          var v       : number   = Number.NEGATIVE_INFINITY;
@@ -90,7 +90,8 @@ function minmax <GameStateGTP, MoveGTP>
                                                  break;
                                              }
                                          }
-                                         assert.isTrue((v===Number.NEGATIVE_INFINITY) || (bestMove!=null), 'maximizing node, v is ${v}, bestMove is: ${bestMove} - this makes no sense');
+                                         if (! ((v===Number.NEGATIVE_INFINITY) || (bestMove!=null) ))
+                                             throw `maximizing node, v is ${v==null?'null':v}, bestMove is: ${bestMove==null?'null':bestMove} - this makes no sense`;
                                          return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
                                      } else {
                                          var v       : number   = Number.POSITIVE_INFINITY;
@@ -111,7 +112,8 @@ function minmax <GameStateGTP, MoveGTP>
                                                  break;
                                              }
                                          }
-                                         assert.isTrue((v===Number.POSITIVE_INFINITY) || (bestMove!=null), 'minimizing node, v is ${v}, bestMove is: ${bestMove} - this makes no sense');
+                                         if (! ((v===Number.POSITIVE_INFINITY) || (bestMove!=null)))
+                                             throw `minimizing node, v is ${v==null?'null':v}, bestMove is: ${bestMove==null?'null':bestMove} - this makes no sense`;
                                          return new EvaluationAndMove(bestMove!==null?bestMove:moves[0], v); // if all moves are equally bad, return the first one
                                      }
                                  }
@@ -123,9 +125,11 @@ function minmax <GameStateGTP, MoveGTP>
                 evaluation: v
             };
         else {
-            assert.isTrue(Number.isInteger(plies) && (plies>=0), `illegal plies for minmax: ${plies}`);
+            if (! (Number.isInteger(plies) && (plies>=0) ))
+                throw `illegal plies for minmax: ${plies}`;
             const evalAndMove :EvaluationAndMove<MoveGTP> = _minmax(gameState, plies, alpha, beta, true); // in the min-max algorithm the player who is to make the move is the maximizing player
-            assert.isTrue((plies===0) || (evalAndMove.move!=null), 'this is not a terminal state, plies were not 0 (they were ${plies}) and yet, no move was found, this makes no sense'); 
+            if (! ( (plies===0) || (evalAndMove.move!=null) ))
+                throw `this is not a terminal state, plies were not 0 (they were ${plies}) and yet, no move was found, this makes no sense`;
             return {
                 bestMove  : evalAndMove.move,
                 evaluation: evalAndMove.evaluation
