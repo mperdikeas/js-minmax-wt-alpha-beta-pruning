@@ -73,7 +73,7 @@ The engine imagines every game supplied to it as consisting of the following thi
 
 * some opaque data structure representing the game state
 * some opaque data structure representing a possible move
-* a function that accepts a single argument: an object representing the state of the game and returns the list of moves that are possible at that game state (accoding to the rules of the game)
+* a function that accepts a single argument: an object representing the state of the game and returns the list of moves that are possible at that game state (according to the rules of the game)
 * a function that accepts two arguments: (a) a game state object, and (b) a move object, and returns a new game state (representing the new state of the game once the move is made)
 * a function that accepts a single argument: an object representing the state of the game and returns a value that indicates whether the game has finished (and pronounces the winner or declares a tie or some other more nuanced outcome &mdash; e.g. in scoring games)
 
@@ -252,11 +252,11 @@ library will not automatically assume that a call to *evaluate* that returns pos
 state.
 
 This means that you are free to use positive or negative infinities as valid return values of *evaluate*
-to simply denote hugely favourable or hugely unfavourable
+to simply denote hugely favorable or hugely unfavorable
 non-terminal states during the course of the game. In other words, as long as *terminalStateEval* returns *null*, then
 the state is understood to be non-terminal, regardless of the return value of *evaluate*.
 
-Also, you are not required to use negative values for game states that are unfavourable
+Also, you are not required to use negative values for game states that are unfavorable
 to the moving player. Simply returning a low value in such a case is enough. In short, you have total freedom in deciding
 what's the numerical range of your *evaluate* function. Much like you have total liberty in deciding what's the range
 of your *terminalStateEval* function. This being said, I think a reasonable approach would be that
@@ -280,7 +280,7 @@ There's nothing subjective or AI-ish about *terminalStateEval*, hence it should 
 of the game.
 In contrast, *evaluate* is where heuristics, subjective evaluation of positions and AI-ish stuff come into play. You would want to make
 *evaluate* reasonably smart but not too heavy as it is better to have a more lightweight *evaluate* function and be able to descend into
-a higher ply depth (ply is described in the next section), than to have an exahustive but slow *evaluate* that will lead you to reduce the ply depth (so as to keep the total *minmax*
+a higher ply depth (ply is described in the next section), than to have an exhaustive but slow *evaluate* that will lead you to reduce the ply depth (so as to keep the total *minmax*
 running time reasonable).
 
 
