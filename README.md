@@ -18,7 +18,7 @@ npm install minmax-wt-alpha-beta-pruning
 # Github repo
 
 If you clone the github repo for experimentation, run *make* first. Look at the top-level <tt>Makefile</tt>
-which installs the dependencies, builds and runs Flow (for static type checking) and runs the tests (Mocha).
+which installs the dependencies, builds and runs <a href='https://flow.org/'>Flow</a> (for static type checking) and runs the tests (<a href='https://mochajs.org/'>Mocha</a>).
 
 For quick examples on how to use the library look at the *test/* directory and in particular the files:
 
@@ -57,14 +57,6 @@ article is wrong. Once you read about alpha-beta pruning it seems simple at firs
 right. This being said, despite the bug in the algorithm, the Wikipedia article does a passable job at
 explaining the intuition behind the alpha-beta pruning idea. A clearer explanation is given in <a href='https://www.cs.cornell.edu/courses/cs312/2002sp/lectures/rec21.htm'>this Cornell course note</a>.
 
-
-
-The library is statically typed using FlowType. Of course, you, as a client programmer, don't have to use FlowType.
-However, if it so happens that you are familiar with FlowType, then simply look at the following two
-files instead of (or in addition to) reading this documentation:
-
-* *minmax-interface.js*: type definitions
-* *index.js*: the single exported function (minmax) and some exported FlowType definitions
 
 
 # Main Concepts
@@ -439,11 +431,27 @@ An obvious caveat is that there is a trade-off involved in this, and so the clie
 want to spend too much time evaluating and sorting possible moves inside *listMoves*
 (or perhaps no time at all).
 
-The library uses FlowType for static type checking and type-checks with no errors.
-It is not a requirement for the client programmer to use FlowType but if they do, then they are able to
+
+## For client programmers who wish to use Flow for static type checking
+
+**NOTE**: DON'T READ THIS SECTION IF YOU ARE NOT USING <a href='https://flow.org/'>Flow</a>.
+
+
+The library is statically typed using Flow.
+Of course, you, as a client programmer, don't have to use Flow.
+However, if it so happens that you are familiar with Flow, then you may wish to have a look
+at the following two files (in addition to reading this documentation):
+
+* *minmax-interface.js*: type definitions
+* *index.js*: the single exported function (minmax) and some exported Flow definitions
+
+
+The library type-checks under Flow with no errors.
+
+It is not a requirement for the client programmer to use Flow but if they do, then they are able to
 import a number of exported types or look at the type definitions in file *minmax-interface.js*.
 These type definitions communicate clearly
-the API of the library and can be consulted in lieu of or alongside this documentation.
+the API of the library and can be consulted alongside this documentation.
 
 E.g. the type of the *minmax* function is defined in *minmax-interface.js* thus:
 
@@ -459,13 +467,15 @@ export type MinMaxFT<GameStateGTP, MoveGTP> =
     ) => TMinMaxResult<MoveGTP>;
 ```
 
-You can see from the above type definition that function *minmax* uses generic type parameters (that's what
-"*GTP*" stands for) and is agnostic as to the actual structures the client programmer uses to represent
-game state or game moves.
+You can see from the above type definition that function *minmax* uses generic type parameters (as
+both *GameStateGTP* and *MoveGTP* are generic type parameters that parametrize the *MinMaxFT*
+type &mdash; incidentally, "*GTP*" stands for "Generic Type Parameter") and is agnostic as to
+the actual structures the client programmer uses to represent game state or game moves.
 
-All FlowTypes types defined in *minmax-interface.js* that are likely to be found useful by client programmers are
-imported and re-exported from the *index.js* file which defines the public interface. Obviously, this only
-concerns client programmers who wish to use FlowType for static type checking. 
+All Flow types defined in *minmax-interface.js* that are likely to be found useful by a
+client programmers using Flow are imported and re-exported from the *index.js* file which
+defines the public interface.
+
 
 
 
