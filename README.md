@@ -10,12 +10,14 @@ Sections: [Installation](#installation), [Githu repo](#github-repo), [Entry Poin
 
 
 # Installation
+<a name='installation'></a>
 
 ```
 npm install minmax-wt-alpha-beta-pruning
 ```
 
 # Github repo
+<a name='github-repo'></a>
 
 If you clone the github repo for experimentation, run *make* first. Look at the top-level <tt>Makefile</tt>
 which installs the dependencies, builds and runs <a href='https://flow.org/'>Flow</a> (for static type checking) and runs the tests (<a href='https://mochajs.org/'>Mocha</a>).
@@ -37,6 +39,7 @@ import {minmax} from 'minmax-wt-alpha-beta-pruning';
 
 
 # Features
+<a name='features'></a>
 
 This library implements a general-purpose minmax algorithm (with alpha-beta pruning).
 It can work with **any** two-player game that a client
@@ -60,6 +63,7 @@ explaining the intuition behind the alpha-beta pruning idea. A clearer explanati
 
 
 # Main Concepts
+<a name='main-concepts'></a>
 
 The engine imagines every game supplied to it as consisting of the following things:
 
@@ -290,6 +294,7 @@ it is reflected in the API which is described next.
 
 
 # How to use
+<a name='how-to-use'></a>
 
 The library exports a single function *minmax* which the client programmer invokes by supplying four mandatory
 arguments:
@@ -411,6 +416,7 @@ some visibility and assurance that the algorithm operated in the way I expected 
 think it's of any utility to the client programmers.
 
 # Implementation details
+<a name='implementation-details'></a>
 
 There is a common further optimization in alpha-beta pruning which is to arrange the children nodes in the
 game tree in such a way so as to maximize the possibility of pruning. 
