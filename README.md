@@ -9,15 +9,18 @@ a **generic** minmax engine with alpha-beta pruning that can work with **any** g
 Sections: [Installation](#installation), [Githu repo](#github-repo), [Entry Point](#entry-point), [Features](#features), [Main Concepts](#main-concepts), [How to use](#how-to-use) and [Implementation details](#implementation-details).
 
 
-# Installation
 <a name='installation'></a>
+
+# Installation
+
 
 ```
 npm install minmax-wt-alpha-beta-pruning
 ```
 
-# Github repo
 <a name='github-repo'></a>
+
+# Github repo
 
 If you clone the github repo for experimentation, run *make* first. Look at the top-level <tt>Makefile</tt>
 which installs the dependencies, builds and runs <a href='https://flow.org/'>Flow</a> (for static type checking) and runs the tests (<a href='https://mochajs.org/'>Mocha</a>).
@@ -29,6 +32,8 @@ For quick examples on how to use the library look at the *test/* directory and i
 
 &hellip; which implement two trivial games.
 
+<a name='entry-point'></a>
+
 # Entry Point
 
 The library exports a single function:
@@ -37,9 +42,9 @@ The library exports a single function:
 import {minmax} from 'minmax-wt-alpha-beta-pruning';
 ```
 
+<a name='features'></a>
 
 # Features
-<a name='features'></a>
 
 This library implements a general-purpose minmax algorithm (with alpha-beta pruning).
 It can work with **any** two-player game that a client
@@ -61,9 +66,9 @@ right. This being said, despite the bug in the algorithm, the Wikipedia article 
 explaining the intuition behind the alpha-beta pruning idea. A clearer explanation is given in <a href='https://www.cs.cornell.edu/courses/cs312/2002sp/lectures/rec21.htm'>this Cornell course note</a>.
 
 
+<a name='main-concepts'></a>
 
 # Main Concepts
-<a name='main-concepts'></a>
 
 The engine imagines every game supplied to it as consisting of the following things:
 
@@ -292,9 +297,9 @@ supplied by the client programmer, three correspond to the rules of the game (*t
 and *nextState*) and one (*evaluate*) is more or less subjective. I am pointing out this distinction yet again because
 it is reflected in the API which is described next.
 
+<a name='how-to-use'></a>
 
 # How to use
-<a name='how-to-use'></a>
 
 The library exports a single function *minmax* which the client programmer invokes by supplying four mandatory
 arguments:
@@ -415,8 +420,9 @@ pruning incidents, etc. It is used in the testing code (directory */test*). It s
 some visibility and assurance that the algorithm operated in the way I expected it to operate. I don't
 think it's of any utility to the client programmers.
 
-# Implementation details
 <a name='implementation-details'></a>
+
+# Implementation details
 
 There is a common further optimization in alpha-beta pruning which is to arrange the children nodes in the
 game tree in such a way so as to maximize the possibility of pruning. 
